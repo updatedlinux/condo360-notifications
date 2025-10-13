@@ -396,10 +396,14 @@ app.get('/notificaciones/dashboard', async (req, res) => {
                 descripcion: notification.descripcion,
                 fecha_notificacion: notification.fecha_notificacion,
                 fecha_fin: notification.fecha_fin,
+                estado: notification.estado,
+                estado_actual: notification.estado_actual,
                 fecha_notificacion_local: timezoneHelper.formatForDisplay(notification.fecha_notificacion),
                 fecha_fin_local: timezoneHelper.formatForDisplay(notification.fecha_fin),
                 created_at: notification.created_at,
                 created_at_local: timezoneHelper.formatForDisplay(notification.created_at),
+                updated_at: notification.updated_at,
+                updated_at_local: timezoneHelper.formatForDisplay(notification.updated_at),
                 tiempo_transcurrido: tiempoTranscurrido
             };
         });

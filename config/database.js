@@ -89,7 +89,13 @@ class Database {
                 descripcion,
                 fecha_notificacion,
                 fecha_fin,
+                estado,
+                CASE 
+                    WHEN NOW() >= fecha_notificacion AND NOW() <= fecha_fin THEN 1
+                    ELSE 0
+                END as estado_actual,
                 created_at,
+                updated_at,
                 TIMESTAMPDIFF(MINUTE, created_at, NOW()) as minutos_desde_creacion,
                 TIMESTAMPDIFF(HOUR, created_at, NOW()) as horas_desde_creacion,
                 TIMESTAMPDIFF(DAY, created_at, NOW()) as dias_desde_creacion
