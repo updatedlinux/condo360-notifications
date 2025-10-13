@@ -937,6 +937,8 @@ app.get('/notificaciones/estado/:id', async (req, res) => {
             message: 'Estado de la notificación obtenido exitosamente',
             data: {
                 id: notification.id,
+                titulo: notification.titulo,
+                descripcion: notification.descripcion,
                 estado_actual: notification.estado_actual === 1,
                 estado_bd: notification.estado === 1,
                 fecha_actual: currentTime,
@@ -944,7 +946,9 @@ app.get('/notificaciones/estado/:id', async (req, res) => {
                 fecha_notificacion: notification.fecha_notificacion,
                 fecha_notificacion_local: timezoneHelper.formatForDisplay(notification.fecha_notificacion),
                 fecha_fin: notification.fecha_fin,
-                fecha_fin_local: timezoneHelper.formatForDisplay(notification.fecha_fin)
+                fecha_fin_local: timezoneHelper.formatForDisplay(notification.fecha_fin),
+                created_at: notification.created_at,
+                created_at_local: timezoneHelper.formatForDisplay(notification.created_at)
             }
         });
 

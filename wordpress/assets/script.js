@@ -27,12 +27,16 @@
             // Modal
             $(document).on('click', '.close', (e) => {
                 console.log('🔍 Botón X clickeado');
+                console.log('🔍 Target:', e.target);
+                console.log('🔍 Current target:', e.currentTarget);
                 e.preventDefault();
                 e.stopPropagation();
                 this.hideModal();
             });
             $(document).on('click', '[data-action="cancel"]', (e) => {
                 console.log('🔍 Botón Cancelar clickeado');
+                console.log('🔍 Target:', e.target);
+                console.log('🔍 Current target:', e.currentTarget);
                 e.preventDefault();
                 e.stopPropagation();
                 this.hideModal();
@@ -370,6 +374,8 @@
         // Ocultar modal
         hideModal() {
             console.log('🔍 Cerrando modal...');
+            console.log('🔍 Modal notification:', $('#condo360-notification-modal').length);
+            console.log('🔍 Modal confirm:', $('#condo360-confirm-modal').length);
             $('#condo360-notification-modal').hide();
             $('#condo360-confirm-modal').hide();
             this.currentNotification = null;
