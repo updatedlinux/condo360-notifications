@@ -391,24 +391,8 @@
                 this.hideModal();
                 this.refreshAll();
                 
-                // Enviar notificación push si es una nueva notificación y está activa
-                if (action === 'create_notification' && window.Condo360PushNotifications) {
-                    const notification = {
-                        id: response.data?.id || 'nueva',
-                        titulo: data.titulo,
-                        descripcion: data.descripcion,
-                        fecha_notificacion: data.fecha_notificacion,
-                        fecha_fin: data.fecha_fin,
-                        estado: data.estado ? 1 : 0,
-                        estado_actual: 1 // Asumimos que es activa si se acaba de crear
-                    };
-                    
-                    // Verificar si debe enviarse la notificación
-                    if (window.Condo360PushNotifications.getPermissionStatus().canSend) {
-                        console.log('🔔 Enviando notificación push para nueva notificación:', notification.titulo);
-                        window.Condo360PushNotifications.sendNotification(notification);
-                    }
-                }
+                // Las notificaciones push se manejan automáticamente por el sistema
+                // No es necesario enviarlas desde el admin
             }, () => {
                 btnText.show();
                 btnLoading.hide();
