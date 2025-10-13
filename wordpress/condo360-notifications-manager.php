@@ -35,9 +35,21 @@ class Condo360NotificationsManager {
         wp_enqueue_script('jquery');
         wp_enqueue_style('condo360-notifications-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.0.0');
         wp_enqueue_script('condo360-notifications-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), '1.0.0', true);
+    }
+    
+    public function render_notifications_shortcode($atts) {
+        // Solo mostrar a administradores
+        if (!current_user_can('administrator') && !current_user_can('editor')) {
+            return '<div class="condo360-notifications-error">Acceso denegado. Se requieren permisos de administrador.</div>';
+        }
         
+        // Asegurar que los scripts estén cargados
+        $this->enqueue_scripts();
+        
+        // Localizar script con contexto de usuario completo
         $user_id = get_current_user_id();
         $is_logged_in = is_user_logged_in();
+        $current_user = wp_get_current_user();
         
         wp_localize_script('condo360-notifications-script', 'condo360_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -48,21 +60,17 @@ class Condo360NotificationsManager {
             'is_admin' => current_user_can('administrator') || current_user_can('editor'),
             'api_url' => $this->api_url,
             'debug' => array(
-                'user_roles' => wp_get_current_user()->roles,
-                'user_caps' => wp_get_current_user()->allcaps,
+                'user_roles' => $current_user->roles,
+                'user_caps' => $current_user->allcaps,
                 'current_user_can_admin' => current_user_can('administrator'),
                 'current_user_can_editor' => current_user_can('editor'),
-                'wp_get_current_user' => wp_get_current_user(),
-                'is_user_logged_in' => is_user_logged_in()
+                'wp_get_current_user' => $current_user,
+                'is_user_logged_in' => $is_logged_in,
+                'user_id_raw' => $user_id,
+                'user_login' => $current_user->user_login,
+                'user_email' => $current_user->user_email
             )
         ));
-    }
-    
-    public function render_notifications_shortcode($atts) {
-        // Solo mostrar a administradores
-        if (!current_user_can('administrator') && !current_user_can('editor')) {
-            return '<div class="condo360-notifications-error">Acceso denegado. Se requieren permisos de administrador.</div>';
-        }
         
         $atts = shortcode_atts(array(
             'show_dashboard' => 'true',

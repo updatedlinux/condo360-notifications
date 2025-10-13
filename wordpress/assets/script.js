@@ -657,8 +657,12 @@
             console.log('🔍 AJAX URL:', condo360_ajax.ajax_url);
             console.log('🔍 User ID:', condo360_ajax.user_id);
             console.log('🔍 Is Admin:', condo360_ajax.is_admin);
+            console.log('🔍 Is Logged In:', condo360_ajax.is_logged_in);
             console.log('🔍 Nonce:', condo360_ajax.nonce);
             console.log('🔍 Debug Info:', condo360_ajax.debug);
+            console.log('🔍 User Login:', condo360_ajax.debug?.user_login);
+            console.log('🔍 User Email:', condo360_ajax.debug?.user_email);
+            console.log('🔍 User Roles:', condo360_ajax.debug?.user_roles);
             
             // Verificar que las variables críticas estén disponibles
             if (!condo360_ajax.user_id || condo360_ajax.user_id === 0) {
