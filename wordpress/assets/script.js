@@ -60,7 +60,13 @@
             $(document).on('click', '[data-action="view"]', (e) => this.viewNotification(e));
             
             // Confirmación
-            $(document).on('click', '#confirm-action', () => this.confirmAction());
+            $(document).on('click', '#confirm-action', (e) => {
+                console.log('🔍 Botón Confirmar clickeado');
+                console.log('🔍 Event:', e);
+                console.log('🔍 Target:', e.target);
+                console.log('🔍 Current target:', e.currentTarget);
+                this.confirmAction();
+            });
             
             // Validación en tiempo real
             $(document).on('input', '#titulo, #descripcion', () => this.validateField());
@@ -318,7 +324,13 @@
         deleteNotification(e) {
             const id = $(e.currentTarget).data('id');
             console.log('🔍 Eliminar notificación ID:', id);
+            console.log('🔍 === INICIO deleteNotification ===');
+            console.log('🔍 ID extraído:', id);
+            console.log('🔍 Tipo de ID:', typeof id);
+            
             this.currentNotification = id;
+            console.log('🔍 this.currentNotification asignado:', this.currentNotification);
+            console.log('🔍 === FIN deleteNotification ===');
             
             $('#confirm-message').text('¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.');
             $('#condo360-confirm-modal').show();
@@ -365,7 +377,11 @@
 
         // Confirmar acción
         confirmAction() {
+            console.log('🔍 === INICIO confirmAction ===');
             console.log('🔍 Confirmar acción - ID:', this.currentNotification);
+            console.log('🔍 Tipo de currentNotification:', typeof this.currentNotification);
+            console.log('🔍 Valor de currentNotification:', this.currentNotification);
+            
             if (this.currentNotification) {
                 console.log('🔍 Eliminando notificación ID:', this.currentNotification);
                 this.makeRequest('delete_notification', { id: this.currentNotification }, (response) => {
@@ -379,7 +395,9 @@
                 });
             } else {
                 console.error('🔍 No hay ID de notificación para eliminar');
+                console.error('🔍 this.currentNotification es:', this.currentNotification);
             }
+            console.log('🔍 === FIN confirmAction ===');
         }
 
         // Refrescar todo
