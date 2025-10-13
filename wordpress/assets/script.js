@@ -292,7 +292,8 @@
             // Cargar datos de la notificación
             this.makeRequest('get_notification_status', { id: id }, (response) => {
                 console.log('🔍 Respuesta edit get_notification_status:', response);
-                const notification = response.data;
+                // Los datos están anidados en response.data.data
+                const notification = response.data.data || response.data;
                 console.log('🔍 Datos para editar:', notification);
                 this.populateForm(notification);
                 $('#modal-title').text('Editar Notificación');
@@ -306,7 +307,8 @@
             console.log('🔍 Ver notificación ID:', id);
             this.makeRequest('get_notification_status', { id: id }, (response) => {
                 console.log('🔍 Respuesta get_notification_status:', response);
-                const notification = response.data;
+                // Los datos están anidados en response.data.data
+                const notification = response.data.data || response.data;
                 console.log('🔍 Datos de notificación:', notification);
                 this.showNotificationDetails(notification);
             });
