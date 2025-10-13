@@ -26,11 +26,13 @@
             
             // Modal
             $(document).on('click', '.close', (e) => {
+                console.log('🔍 Botón X clickeado');
                 e.preventDefault();
                 e.stopPropagation();
                 this.hideModal();
             });
             $(document).on('click', '[data-action="cancel"]', (e) => {
+                console.log('🔍 Botón Cancelar clickeado');
                 e.preventDefault();
                 e.stopPropagation();
                 this.hideModal();
@@ -156,7 +158,7 @@
                             ${notification.tiempo_transcurrido.texto_completo}
                         </div>
                         <div class="notification-status ${notification.estado_actual ? 'active' : 'inactive'}">
-                            ${notification.estado_actual ? 'Activa' : 'Inactiva'}
+                            ${this.getStatusText(notification)}
                         </div>
                     </div>
                 </div>
@@ -203,7 +205,7 @@
                         <div class="date-group">
                             <div class="date-label">Estado:</div>
                             <div class="notification-status ${notification.estado_actual ? 'active' : 'inactive'}">
-                                ${notification.estado_actual ? 'Activa' : 'Inactiva'}
+                                ${this.getStatusText(notification)}
                             </div>
                         </div>
                     </div>
@@ -399,6 +401,23 @@
             $('#estado').prop('checked', notification.estado);
         }
 
+        // Obtener texto de estado más descriptivo
+        getStatusText(notification) {
+            const now = new Date();
+            const startDate = new Date(notification.fecha_notificacion);
+            const endDate = new Date(notification.fecha_fin);
+            
+            if (notification.estado_actual) {
+                return 'Activa';
+            } else if (now < startDate) {
+                return 'Programada';
+            } else if (now > endDate) {
+                return 'Expirada';
+            } else {
+                return 'Inactiva';
+            }
+        }
+
         // Obtener datos del formulario
         getFormData() {
             return {
@@ -497,7 +516,7 @@
                     <p><strong>Descripción:</strong> ${this.escapeHtml(notification.descripcion)}</p>
                     <p><strong>Fecha de inicio:</strong> ${notification.fecha_notificacion_local}</p>
                     <p><strong>Fecha de fin:</strong> ${notification.fecha_fin_local}</p>
-                    <p><strong>Estado:</strong> ${notification.estado_actual ? 'Activa' : 'Inactiva'}</p>
+                    <p><strong>Estado:</strong> ${this.getStatusText(notification)}</p>
                     <p><strong>Creada:</strong> ${notification.created_at_local}</p>
                 </div>
             `;
