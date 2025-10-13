@@ -134,9 +134,38 @@ class Database {
         if (!capabilities) return false;
         
         // Verificar si tiene capacidades de administrador
-        const caps = JSON.parse(capabilities);
+        // WordPress almacena las capacidades en formato serializado de PHP
+        // Ejemplo: a:1:{s:13:"administrator";b:1;}
+        const caps = this.parseWordPressCapabilities(capabilities);
         return caps.administrator === true || caps.editor === true;
     }
-}
 
-module.exports = new Database();
+    // Parsear capacidades serializadas de WordPress
+    parseWordPressCapabilities(capabilitiesString) {
+        try {
+            // Formato típico: a:1:{s:13:"administrator";b:1;}
+            // Buscar roles específicos
+            const caps = {};
+            
+            if (capabilitiesString.includes('administrator')) {
+                caps.administrator = true;
+            }
+            if (capabilitiesString.includes('editor')) {
+                caps.editor = true;
+            }
+            if (capabilitiesString.includes('author')) {
+                caps.author = true;
+            }
+            if (capabilitiesString.includes('contributor')) {
+                caps.contributor = true;
+            }
+            if (capabilitiesString.includes('subscriber')) {
+                caps.subscriber = true;
+            }
+            
+            return caps;
+        } catch (error) {
+            console.error('Error parsing WordPress capabilities:', error);
+            return {};
+        }
+    }

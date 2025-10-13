@@ -27,10 +27,12 @@
             // Modal
             $(document).on('click', '.close', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.hideModal();
             });
             $(document).on('click', '[data-action="cancel"]', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.hideModal();
             });
             $(document).on('click', '.modal', (e) => {
@@ -561,7 +563,7 @@
                         console.error('❌ Error en respuesta:', response);
                         
                         // Si es error de nonce, intentar con nonce de respaldo
-                        if (response.data && response.data.includes('Nonce inválido')) {
+                        if (response.data && typeof response.data === 'string' && response.data.includes('Nonce inválido')) {
                             console.log('🔄 Intentando con nonce de respaldo...');
                             if (condo360_ajax.nonce_backup) {
                                 condo360_ajax.nonce = condo360_ajax.nonce_backup;
