@@ -503,8 +503,21 @@
                         successCallback(response);
                     } else {
                         console.error('❌ Error en respuesta:', response);
-                        this.showToast(response.data?.error || 'Error en la operación', 'error');
-                        if (errorCallback) errorCallback(response);
+                        
+                        // Si es error de nonce, intentar regenerarlo
+                        if (response.data && response.data.includes('Nonce inválido')) {
+                            console.log('🔄 Regenerando nonce...');
+                            this.refreshNonce().then(() => {
+                                console.log('🔄 Reintentando petición...');
+                                this.makeRequest(action, data, successCallback, errorCallback);
+                            }).catch(() => {
+                                this.showToast(response.data || 'Error en la operación', 'error');
+                                if (errorCallback) errorCallback(response);
+                            });
+                        } else {
+                            this.showToast(response.data || 'Error en la operación', 'error');
+                            if (errorCallback) errorCallback(response);
+                        }
                     }
                 }.bind(this),
                 error: function(xhr, status, error) {
@@ -512,6 +525,33 @@
                     this.showToast('Error de conexión: ' + error, 'error');
                     if (errorCallback) errorCallback(xhr);
                 }.bind(this)
+            });
+        }
+
+        // Regenerar nonce
+        refreshNonce() {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: condo360_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'condo360_get_nonce'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            condo360_ajax.nonce = response.data.nonce;
+                            console.log('✅ Nonce regenerado:', condo360_ajax.nonce);
+                            resolve();
+                        } else {
+                            console.error('❌ Error al regenerar nonce:', response);
+                            reject(response);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('❌ Error de AJAX al regenerar nonce:', xhr, status, error);
+                        reject(xhr);
+                    }
+                });
             });
         }
 
