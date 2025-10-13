@@ -392,7 +392,7 @@
                 this.refreshAll();
                 
                 // Enviar notificación push si es una nueva notificación y está activa
-                if (action === 'create_notification' && window.pushNotificationService) {
+                if (action === 'create_notification' && window.Condo360PushNotifications) {
                     const notification = {
                         id: response.data?.id || 'nueva',
                         titulo: data.titulo,
@@ -404,9 +404,9 @@
                     };
                     
                     // Verificar si debe enviarse la notificación
-                    if (window.pushNotificationService.shouldSendNotification(notification)) {
+                    if (window.Condo360PushNotifications.getPermissionStatus().canSend) {
                         console.log('🔔 Enviando notificación push para nueva notificación:', notification.titulo);
-                        window.pushNotificationService.sendNotification(notification);
+                        window.Condo360PushNotifications.sendNotification(notification);
                     }
                 }
             }, () => {
@@ -840,41 +840,6 @@
     // Inicializar cuando el documento esté listo
     $(document).ready(function() {
         console.log('🔍 Inicializando Condo360 Notifications...');
-        
-        // Inicializar servicio de notificaciones push
-        window.pushNotificationService = new PushNotificationService();
-        
-        // Verificar estado de permisos al cargar
-        const permissionStatus = window.pushNotificationService.getPermissionStatus();
-        updatePermissionStatus(permissionStatus);
-        
-        // Event handler para solicitar permisos
-        $('#condo360-request-permissions').on('click', async function() {
-            console.log('🔔 Solicitando permisos de notificaciones...');
-            const granted = await window.pushNotificationService.requestPermission();
-            const status = window.pushNotificationService.getPermissionStatus();
-            updatePermissionStatus(status);
-        });
-        
-        // Función para actualizar el estado de permisos en la UI
-        function updatePermissionStatus(status) {
-            const statusElement = $('#condo360-permission-status');
-            const button = $('#condo360-request-permissions');
-            
-            if (!status.supported) {
-                statusElement.text('Las notificaciones no son compatibles con este navegador').addClass('denied').show();
-                button.prop('disabled', true);
-            } else if (status.permission === 'granted') {
-                statusElement.text('✅ Notificaciones activadas').addClass('granted').show();
-                button.text('🔔 Notificaciones Activadas').prop('disabled', true);
-            } else if (status.permission === 'denied') {
-                statusElement.text('❌ Permisos denegados. Activa manualmente en la configuración del navegador.').addClass('denied').show();
-                button.text('🔔 Activar Notificaciones').prop('disabled', false);
-            } else {
-                statusElement.text('⚠️ Haz clic en "Activar Notificaciones Push" para recibir alertas').addClass('default').show();
-                button.text('🔔 Activar Notificaciones Push').prop('disabled', false);
-            }
-        }
         
         console.log('🔍 Variables disponibles:', typeof condo360_ajax !== 'undefined');
         console.log('🔍 Window condo360_ajax:', typeof window.condo360_ajax !== 'undefined');

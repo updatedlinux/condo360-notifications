@@ -25,6 +25,7 @@ class Condo360NotificationsManager {
         add_action('wp_ajax_condo360_notifications_action', array($this, 'handle_ajax_request'));
         add_action('wp_ajax_nopriv_condo360_notifications_action', array($this, 'handle_ajax_request'));
         add_action('wp_ajax_condo360_get_nonce', array($this, 'get_new_nonce'));
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
     }
     
     public function init() {
@@ -33,6 +34,8 @@ class Condo360NotificationsManager {
     
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
+        
+        // Cargar servicio de notificaciones push en todas las páginas
         wp_enqueue_script(
             'condo360-notifications-push',
             plugin_dir_url(__FILE__) . 'assets/push-notifications.js',
@@ -40,8 +43,21 @@ class Condo360NotificationsManager {
             '1.0.0',
             true
         );
-        wp_enqueue_style('condo360-notifications-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.0.0');
-        wp_enqueue_script('condo360-notifications-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery', 'condo360-notifications-push'), '1.0.0', true);
+        
+        // Cargar inicialización automática de notificaciones push en todas las páginas
+        wp_enqueue_script(
+            'condo360-push-auto-init',
+            plugin_dir_url(__FILE__) . 'assets/push-auto-init.js',
+            array('condo360-notifications-push'),
+            '1.0.0',
+            true
+        );
+        
+        // Solo cargar estilos y script principal en páginas con el shortcode
+        if (is_admin() || has_shortcode(get_post()->post_content ?? '', 'condo360_notifications')) {
+            wp_enqueue_style('condo360-notifications-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.0.0');
+            wp_enqueue_script('condo360-notifications-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery', 'condo360-notifications-push'), '1.0.0', true);
+        }
     }
     
     public function render_notifications_shortcode($atts) {
@@ -106,14 +122,6 @@ class Condo360NotificationsManager {
                         <i class="icon-refresh"></i> Actualizar
                     </button>
                 </div>
-            </div>
-            
-            <!-- Botón para solicitar permisos de notificaciones -->
-            <div class="condo360-permissions-section">
-                <button type="button" id="condo360-request-permissions" class="btn btn-info">
-                    <i class="icon-bell"></i> Activar Notificaciones Push
-                </button>
-                <div id="condo360-permission-status" class="permission-status"></div>
             </div>
             
             <?php if ($atts['show_dashboard'] === 'true'): ?>
@@ -439,6 +447,53 @@ class Condo360NotificationsManager {
         
         $new_nonce = wp_create_nonce('condo360_notifications_nonce');
         wp_send_json_success(array('nonce' => $new_nonce));
+    }
+    
+    // Registrar rutas REST API para usuarios finales
+    public function register_rest_routes() {
+        register_rest_route('condo360/v1', '/notifications/active', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get_active_notifications_rest'),
+            'permission_callback' => '__return_true', // Público para usuarios finales
+        ));
+    }
+    
+    // Obtener notificaciones activas para usuarios finales
+    public function get_active_notifications_rest($request) {
+        try {
+            // Hacer petición al API de Node.js
+            $response = wp_remote_get($this->api_url . '/notificaciones/dashboard', array(
+                'timeout' => $this->api_timeout,
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                )
+            ));
+            
+            if (is_wp_error($response)) {
+                return new WP_Error('api_error', 'Error al conectar con el servidor', array('status' => 500));
+            }
+            
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+            
+            if (!$data || !$data['success']) {
+                return new WP_Error('api_error', 'Error al obtener notificaciones', array('status' => 500));
+            }
+            
+            // Filtrar solo notificaciones activas para usuarios finales
+            $active_notifications = array_filter($data['data'], function($notification) {
+                return $notification['estado'] == 1 && $notification['estado_actual'] == 1;
+            });
+            
+            return rest_ensure_response(array(
+                'success' => true,
+                'data' => array_values($active_notifications), // Reindexar array
+                'count' => count($active_notifications)
+            ));
+            
+        } catch (Exception $e) {
+            return new WP_Error('server_error', 'Error interno del servidor', array('status' => 500));
+        }
     }
 }
 
