@@ -923,6 +923,8 @@ app.get('/notificaciones/estado/:id', async (req, res) => {
 
         const notification = await database.checkNotificationStatus(validation.data.id);
         
+        console.log('🔍 Estado - Notificación obtenida:', notification);
+        
         if (!notification) {
             return res.status(404).json({
                 error: 'Notificación no encontrada',
@@ -932,24 +934,28 @@ app.get('/notificaciones/estado/:id', async (req, res) => {
 
         const currentTime = timezoneHelper.getCurrentUtc().format('YYYY-MM-DD HH:mm:ss');
 
+        const responseData = {
+            id: notification.id,
+            titulo: notification.titulo,
+            descripcion: notification.descripcion,
+            estado_actual: notification.estado_actual === 1,
+            estado_bd: notification.estado === 1,
+            fecha_actual: currentTime,
+            fecha_actual_local: timezoneHelper.getCurrentLocal().format('YYYY-MM-DD HH:mm:ss'),
+            fecha_notificacion: notification.fecha_notificacion,
+            fecha_notificacion_local: timezoneHelper.formatForDisplay(notification.fecha_notificacion),
+            fecha_fin: notification.fecha_fin,
+            fecha_fin_local: timezoneHelper.formatForDisplay(notification.fecha_fin),
+            created_at: notification.created_at,
+            created_at_local: timezoneHelper.formatForDisplay(notification.created_at)
+        };
+
+        console.log('🔍 Estado - Datos de respuesta:', responseData);
+
         res.json({
             success: true,
             message: 'Estado de la notificación obtenido exitosamente',
-            data: {
-                id: notification.id,
-                titulo: notification.titulo,
-                descripcion: notification.descripcion,
-                estado_actual: notification.estado_actual === 1,
-                estado_bd: notification.estado === 1,
-                fecha_actual: currentTime,
-                fecha_actual_local: timezoneHelper.getCurrentLocal().format('YYYY-MM-DD HH:mm:ss'),
-                fecha_notificacion: notification.fecha_notificacion,
-                fecha_notificacion_local: timezoneHelper.formatForDisplay(notification.fecha_notificacion),
-                fecha_fin: notification.fecha_fin,
-                fecha_fin_local: timezoneHelper.formatForDisplay(notification.fecha_fin),
-                created_at: notification.created_at,
-                created_at_local: timezoneHelper.formatForDisplay(notification.created_at)
-            }
+            data: responseData
         });
 
     } catch (error) {

@@ -286,11 +286,14 @@
         // Editar notificación
         editNotification(e) {
             const id = $(e.currentTarget).data('id');
+            console.log('🔍 Editar notificación ID:', id);
             this.currentNotification = id;
             
             // Cargar datos de la notificación
             this.makeRequest('get_notification_status', { id: id }, (response) => {
+                console.log('🔍 Respuesta edit get_notification_status:', response);
                 const notification = response.data;
+                console.log('🔍 Datos para editar:', notification);
                 this.populateForm(notification);
                 $('#modal-title').text('Editar Notificación');
                 $('#condo360-notification-modal').show();
@@ -300,8 +303,11 @@
         // Ver notificación
         viewNotification(e) {
             const id = $(e.currentTarget).data('id');
+            console.log('🔍 Ver notificación ID:', id);
             this.makeRequest('get_notification_status', { id: id }, (response) => {
+                console.log('🔍 Respuesta get_notification_status:', response);
                 const notification = response.data;
+                console.log('🔍 Datos de notificación:', notification);
                 this.showNotificationDetails(notification);
             });
         }
@@ -309,6 +315,7 @@
         // Eliminar notificación
         deleteNotification(e) {
             const id = $(e.currentTarget).data('id');
+            console.log('🔍 Eliminar notificación ID:', id);
             this.currentNotification = id;
             
             $('#confirm-message').text('¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.');
@@ -356,12 +363,20 @@
 
         // Confirmar acción
         confirmAction() {
+            console.log('🔍 Confirmar acción - ID:', this.currentNotification);
             if (this.currentNotification) {
+                console.log('🔍 Eliminando notificación ID:', this.currentNotification);
                 this.makeRequest('delete_notification', { id: this.currentNotification }, (response) => {
+                    console.log('🔍 Respuesta eliminación:', response);
                     this.showToast('Notificación eliminada exitosamente', 'success');
                     this.hideModal();
                     this.refreshAll();
+                }, (error) => {
+                    console.error('🔍 Error al eliminar:', error);
+                    this.showToast('Error al eliminar notificación', 'error');
                 });
+            } else {
+                console.error('🔍 No hay ID de notificación para eliminar');
             }
         }
 
@@ -399,12 +414,16 @@
 
         // Poblar formulario
         populateForm(notification) {
+            console.log('🔍 Poblando formulario con:', notification);
             $('#notification-id').val(notification.id);
             $('#titulo').val(notification.titulo);
             $('#descripcion').val(notification.descripcion);
             $('#fecha_notificacion').val(this.formatDateTimeLocal(new Date(notification.fecha_notificacion)));
             $('#fecha_fin').val(this.formatDateTimeLocal(new Date(notification.fecha_fin)));
             $('#estado').prop('checked', notification.estado);
+            console.log('🔍 Formulario poblado - ID:', $('#notification-id').val());
+            console.log('🔍 Formulario poblado - Título:', $('#titulo').val());
+            console.log('🔍 Formulario poblado - Estado:', $('#estado').is(':checked'));
         }
 
         // Obtener texto de estado más descriptivo
