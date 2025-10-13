@@ -25,8 +25,8 @@
             $(document).on('click', '[data-action="refresh"]', () => this.refreshAll());
             
             // Modal
-            $(document).on('click', '.close', (e) => {
-                console.log('🔍 Botón X clickeado');
+            $(document).on('click', '.condo360-close', (e) => {
+                console.log('🔍 Botón X clickeado (condo360)');
                 console.log('🔍 Target:', e.target);
                 console.log('🔍 Current target:', e.currentTarget);
                 e.preventDefault();
@@ -41,7 +41,7 @@
                 e.stopPropagation();
                 this.hideModal();
             });
-            $(document).on('click', '.modal', (e) => {
+            $(document).on('click', '.condo360-modal', (e) => {
                 if (e.target === e.currentTarget) {
                     this.hideModal();
                 }
@@ -60,19 +60,8 @@
             $(document).on('click', '[data-action="view"]', (e) => this.viewNotification(e));
             
             // Confirmación
-            $(document).on('click', '#condo360-confirm-modal #confirm-action', (e) => {
-                console.log('🔍 Botón Confirmar clickeado (específico)');
-                console.log('🔍 Event:', e);
-                console.log('🔍 Target:', e.target);
-                console.log('🔍 Current target:', e.currentTarget);
-                e.preventDefault();
-                e.stopPropagation();
-                this.confirmAction();
-            });
-            
-            // También agregar el event handler original como fallback
-            $(document).on('click', '#confirm-action', (e) => {
-                console.log('🔍 Botón Confirmar clickeado (fallback)');
+            $(document).on('click', '#condo360-confirm-action', (e) => {
+                console.log('🔍 Botón Confirmar clickeado (condo360)');
                 console.log('🔍 Event:', e);
                 console.log('🔍 Target:', e.target);
                 console.log('🔍 Current target:', e.currentTarget);
@@ -82,8 +71,8 @@
             });
             
             // Validación en tiempo real
-            $(document).on('input', '#titulo, #descripcion', () => this.validateField());
-            $(document).on('change', '#fecha_notificacion, #fecha_fin', () => this.validateDates());
+            $(document).on('input', '#condo360-titulo, #condo360-descripcion', () => this.validateField());
+            $(document).on('change', '#condo360-fecha_notificacion, #condo360-fecha_fin', () => this.validateDates());
         }
 
         // Cargar notificaciones del dashboard
@@ -298,7 +287,7 @@
         showCreateModal() {
             this.currentNotification = null;
             this.resetForm();
-            $('#modal-title').text('Nueva Notificación');
+            $('#condo360-modal-title').text('Nueva Notificación');
             $('#condo360-notification-modal').show();
         }
 
@@ -315,7 +304,7 @@
                 const notification = response.data.data || response.data;
                 console.log('🔍 Datos para editar:', notification);
                 this.populateForm(notification);
-                $('#modal-title').text('Editar Notificación');
+                $('#condo360-modal-title').text('Editar Notificación');
                 $('#condo360-notification-modal').show();
             });
         }
@@ -345,19 +334,19 @@
             console.log('🔍 this.currentNotification asignado:', this.currentNotification);
             console.log('🔍 === FIN deleteNotification ===');
             
-            $('#confirm-message').text('¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.');
+            $('#condo360-confirm-message').text('¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.');
             $('#condo360-confirm-modal').show();
             
             // Debugging: verificar que el botón existe
-            console.log('🔍 Verificando botón confirm-action...');
-            console.log('🔍 Botón existe:', $('#confirm-action').length);
-            console.log('🔍 Botón en modal:', $('#condo360-confirm-modal #confirm-action').length);
-            console.log('🔍 Botón visible:', $('#confirm-action').is(':visible'));
+            console.log('🔍 Verificando botón condo360-confirm-action...');
+            console.log('🔍 Botón existe:', $('#condo360-confirm-action').length);
+            console.log('🔍 Botón en modal:', $('#condo360-confirm-modal #condo360-confirm-action').length);
+            console.log('🔍 Botón visible:', $('#condo360-confirm-action').is(':visible'));
             
             // Intentar hacer clic programáticamente para testing
             setTimeout(() => {
                 console.log('🔍 Intentando clic programático...');
-                $('#confirm-action').trigger('click');
+                $('#condo360-confirm-action').trigger('click');
             }, 1000);
         }
 
@@ -445,7 +434,7 @@
         // Resetear formulario
         resetForm() {
             $('#condo360-notification-form')[0].reset();
-            $('#notification-id').val('');
+            $('#condo360-notification-id').val('');
             this.clearErrors();
             
             // Establecer fechas por defecto
@@ -453,22 +442,22 @@
             const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
             const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
             
-            $('#fecha_notificacion').val(this.formatDateTimeLocal(tomorrow));
-            $('#fecha_fin').val(this.formatDateTimeLocal(nextWeek));
+            $('#condo360-fecha_notificacion').val(this.formatDateTimeLocal(tomorrow));
+            $('#condo360-fecha_fin').val(this.formatDateTimeLocal(nextWeek));
         }
 
         // Poblar formulario
         populateForm(notification) {
             console.log('🔍 Poblando formulario con:', notification);
-            $('#notification-id').val(notification.id);
-            $('#titulo').val(notification.titulo);
-            $('#descripcion').val(notification.descripcion);
-            $('#fecha_notificacion').val(this.formatDateTimeLocal(new Date(notification.fecha_notificacion)));
-            $('#fecha_fin').val(this.formatDateTimeLocal(new Date(notification.fecha_fin)));
-            $('#estado').prop('checked', notification.estado);
-            console.log('🔍 Formulario poblado - ID:', $('#notification-id').val());
-            console.log('🔍 Formulario poblado - Título:', $('#titulo').val());
-            console.log('🔍 Formulario poblado - Estado:', $('#estado').is(':checked'));
+            $('#condo360-notification-id').val(notification.id);
+            $('#condo360-titulo').val(notification.titulo);
+            $('#condo360-descripcion').val(notification.descripcion);
+            $('#condo360-fecha_notificacion').val(this.formatDateTimeLocal(new Date(notification.fecha_notificacion)));
+            $('#condo360-fecha_fin').val(this.formatDateTimeLocal(new Date(notification.fecha_fin)));
+            $('#condo360-estado').prop('checked', notification.estado);
+            console.log('🔍 Formulario poblado - ID:', $('#condo360-notification-id').val());
+            console.log('🔍 Formulario poblado - Título:', $('#condo360-titulo').val());
+            console.log('🔍 Formulario poblado - Estado:', $('#condo360-estado').is(':checked'));
         }
 
         // Obtener texto de estado más descriptivo
@@ -491,11 +480,11 @@
         // Obtener datos del formulario
         getFormData() {
             return {
-                titulo: $('#titulo').val(),
-                descripcion: $('#descripcion').val(),
-                fecha_notificacion: $('#fecha_notificacion').val(),
-                fecha_fin: $('#fecha_fin').val(),
-                estado: $('#estado').is(':checked')
+                titulo: $('#condo360-titulo').val(),
+                descripcion: $('#condo360-descripcion').val(),
+                fecha_notificacion: $('#condo360-fecha_notificacion').val(),
+                fecha_fin: $('#condo360-fecha_fin').val(),
+                estado: $('#condo360-estado').is(':checked')
             };
         }
 
@@ -591,7 +580,7 @@
                 </div>
             `;
             
-            $('#confirm-message').html(details);
+            $('#condo360-confirm-message').html(details);
             $('#condo360-confirm-modal').show();
         }
 

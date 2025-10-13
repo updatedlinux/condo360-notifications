@@ -132,45 +132,45 @@ class Condo360NotificationsManager {
         </div>
         
         <!-- Modal para crear/editar notificación -->
-        <div id="condo360-notification-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modal-title">Nueva Notificación</h3>
-                    <span class="close">&times;</span>
+        <div id="condo360-notification-modal" class="condo360-modal" style="display: none;">
+            <div class="condo360-modal-content">
+                <div class="condo360-modal-header">
+                    <h3 id="condo360-modal-title">Nueva Notificación</h3>
+                    <span class="condo360-close">&times;</span>
                 </div>
-                <div class="modal-body">
+                <div class="condo360-modal-body">
                     <form id="condo360-notification-form">
-                        <input type="hidden" id="notification-id" name="id">
+                        <input type="hidden" id="condo360-notification-id" name="id">
                         
                         <div class="form-group">
-                            <label for="titulo">Título *</label>
-                            <input type="text" id="titulo" name="titulo" class="form-control" required maxlength="255">
-                            <div class="error-message" id="titulo-error"></div>
+                            <label for="condo360-titulo">Título *</label>
+                            <input type="text" id="condo360-titulo" name="titulo" class="form-control" required maxlength="255">
+                            <div class="error-message" id="condo360-titulo-error"></div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="descripcion">Descripción *</label>
-                            <textarea id="descripcion" name="descripcion" class="form-control" rows="4" required maxlength="2000"></textarea>
-                            <div class="error-message" id="descripcion-error"></div>
+                            <label for="condo360-descripcion">Descripción *</label>
+                            <textarea id="condo360-descripcion" name="descripcion" class="form-control" rows="4" required maxlength="2000"></textarea>
+                            <div class="error-message" id="condo360-descripcion-error"></div>
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="fecha_notificacion">Fecha de Inicio *</label>
-                                <input type="datetime-local" id="fecha_notificacion" name="fecha_notificacion" class="form-control" required>
-                                <div class="error-message" id="fecha_notificacion-error"></div>
+                                <label for="condo360-fecha_notificacion">Fecha de Inicio *</label>
+                                <input type="datetime-local" id="condo360-fecha_notificacion" name="fecha_notificacion" class="form-control" required>
+                                <div class="error-message" id="condo360-fecha_notificacion-error"></div>
                             </div>
                             
                             <div class="form-group">
-                                <label for="fecha_fin">Fecha de Fin *</label>
-                                <input type="datetime-local" id="fecha_fin" name="fecha_fin" class="form-control" required>
-                                <div class="error-message" id="fecha_fin-error"></div>
+                                <label for="condo360-fecha_fin">Fecha de Fin *</label>
+                                <input type="datetime-local" id="condo360-fecha_fin" name="fecha_fin" class="form-control" required>
+                                <div class="error-message" id="condo360-fecha_fin-error"></div>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label class="checkbox-label">
-                                <input type="checkbox" id="estado" name="estado" checked>
+                                <input type="checkbox" id="condo360-estado" name="estado" checked>
                                 <span class="checkmark"></span>
                                 Notificación activa
                             </label>
@@ -189,17 +189,17 @@ class Condo360NotificationsManager {
         </div>
         
         <!-- Modal de confirmación -->
-        <div id="condo360-confirm-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
+        <div id="condo360-confirm-modal" class="condo360-modal" style="display: none;">
+            <div class="condo360-modal-content">
+                <div class="condo360-modal-header">
                     <h3>Confirmar Acción</h3>
                 </div>
-                <div class="modal-body">
-                    <p id="confirm-message">¿Estás seguro de que deseas realizar esta acción?</p>
+                <div class="condo360-modal-body">
+                    <p id="condo360-confirm-message">¿Estás seguro de que deseas realizar esta acción?</p>
                 </div>
-                <div class="modal-footer">
+                <div class="condo360-modal-footer">
                     <button type="button" class="btn btn-secondary" data-action="cancel">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="confirm-action">Confirmar</button>
+                    <button type="button" class="btn btn-danger" id="condo360-confirm-action">Confirmar</button>
                 </div>
             </div>
         </div>
