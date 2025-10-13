@@ -654,9 +654,12 @@
         console.log('🔍 Variables disponibles:', typeof condo360_ajax !== 'undefined');
         console.log('🔍 Window condo360_ajax:', typeof window.condo360_ajax !== 'undefined');
         console.log('🔍 Window condo360_ajax content:', window.condo360_ajax);
+        console.log('🔍 Window condo360_notifications_data:', typeof window.condo360_notifications_data !== 'undefined');
+        console.log('🔍 Window condo360_notifications_data content:', window.condo360_notifications_data);
         
-        // Usar window.condo360_ajax como fallback si condo360_ajax no está disponible
-        var ajaxData = typeof condo360_ajax !== 'undefined' ? condo360_ajax : window.condo360_ajax;
+        // Usar window.condo360_notifications_data como fuente principal
+        var ajaxData = window.condo360_notifications_data || 
+                      (typeof condo360_ajax !== 'undefined' ? condo360_ajax : window.condo360_ajax);
         
         if (typeof ajaxData !== 'undefined') {
             console.log('🔍 AJAX URL:', ajaxData.ajax_url);
@@ -680,6 +683,7 @@
             
             // Asignar ajaxData a condo360_ajax para compatibilidad
             window.condo360_ajax = ajaxData;
+            window.condo360_notifications_data = ajaxData;
             
             new Condo360Notifications();
         } else {

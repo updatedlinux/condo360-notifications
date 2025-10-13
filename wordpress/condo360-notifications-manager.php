@@ -73,9 +73,9 @@ class Condo360NotificationsManager {
             )
         );
         
-        // Script inline para definir variables
+        // Script inline para definir variables con nombre único
         $script_data = json_encode($ajax_data);
-        $inline_script = "window.condo360_ajax = {$script_data};";
+        $inline_script = "window.condo360_notifications_data = {$script_data}; console.log('🔍 Script inline ejecutado:', window.condo360_notifications_data);";
         
         $atts = shortcode_atts(array(
             'show_dashboard' => 'true',
