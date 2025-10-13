@@ -62,7 +62,15 @@
         // Cargar notificaciones del dashboard
         loadDashboardNotifications() {
             this.makeRequest('get_dashboard', {}, (response) => {
-                this.renderDashboardNotifications(response.data);
+                console.log('🔍 Respuesta get_dashboard:', response);
+                
+                // Verificar estructura de respuesta
+                if (response.data) {
+                    this.renderDashboardNotifications(response.data);
+                } else {
+                    console.error('❌ Estructura de respuesta incorrecta:', response);
+                    $('#condo360-dashboard-notifications').html('<div class="error">Error: Estructura de datos incorrecta</div>');
+                }
             }, (error) => {
                 console.error('Error al cargar dashboard:', error);
                 $('#condo360-dashboard-notifications').html('<div class="error">Error al cargar notificaciones del dashboard</div>');
@@ -78,8 +86,16 @@
             };
 
             this.makeRequest('get_notifications', data, (response) => {
-                this.renderNotificationsList(response.data.notifications);
-                this.renderPagination(response.data.pagination);
+                console.log('🔍 Respuesta get_notifications:', response);
+                
+                // Verificar estructura de respuesta
+                if (response.data && response.data.notifications) {
+                    this.renderNotificationsList(response.data.notifications);
+                    this.renderPagination(response.data.pagination);
+                } else {
+                    console.error('❌ Estructura de respuesta incorrecta:', response);
+                    $('#condo360-notifications-list').html('<div class="error">Error: Estructura de datos incorrecta</div>');
+                }
             }, (error) => {
                 console.error('Error al cargar notificaciones:', error);
                 $('#condo360-notifications-list').html('<div class="error">Error al cargar la lista de notificaciones</div>');
@@ -89,6 +105,15 @@
         // Renderizar notificaciones del dashboard
         renderDashboardNotifications(notifications) {
             const container = $('#condo360-dashboard-notifications');
+            
+            console.log('🔍 Renderizando dashboard notifications:', notifications);
+            
+            // Verificar que notifications es un array
+            if (!Array.isArray(notifications)) {
+                console.error('❌ notifications no es un array:', notifications);
+                container.html('<div class="error">Error: Formato de datos incorrecto</div>');
+                return;
+            }
             
             if (notifications.length === 0) {
                 container.html('<div class="no-notifications">No hay notificaciones activas</div>');
@@ -165,6 +190,13 @@
         // Renderizar paginación
         renderPagination(pagination) {
             const container = $('#condo360-pagination');
+            
+            // Verificar que pagination existe y tiene las propiedades necesarias
+            if (!pagination || typeof pagination !== 'object') {
+                console.log('🔍 Paginación no disponible o formato incorrecto:', pagination);
+                container.empty();
+                return;
+            }
             
             if (pagination.pages <= 1) {
                 container.empty();
@@ -504,16 +536,23 @@
                     } else {
                         console.error('❌ Error en respuesta:', response);
                         
-                        // Si es error de nonce, intentar regenerarlo
+                        // Si es error de nonce, intentar con nonce de respaldo
                         if (response.data && response.data.includes('Nonce inválido')) {
-                            console.log('🔄 Regenerando nonce...');
-                            this.refreshNonce().then(() => {
-                                console.log('🔄 Reintentando petición...');
+                            console.log('🔄 Intentando con nonce de respaldo...');
+                            if (condo360_ajax.nonce_backup) {
+                                condo360_ajax.nonce = condo360_ajax.nonce_backup;
+                                console.log('🔄 Reintentando petición con nonce de respaldo...');
                                 this.makeRequest(action, data, successCallback, errorCallback);
-                            }).catch(() => {
-                                this.showToast(response.data || 'Error en la operación', 'error');
-                                if (errorCallback) errorCallback(response);
-                            });
+                            } else {
+                                console.log('🔄 Regenerando nonce...');
+                                this.refreshNonce().then(() => {
+                                    console.log('🔄 Reintentando petición...');
+                                    this.makeRequest(action, data, successCallback, errorCallback);
+                                }).catch(() => {
+                                    this.showToast('Error de autenticación. Recarga la página e intenta de nuevo.', 'error');
+                                    if (errorCallback) errorCallback(response);
+                                });
+                            }
                         } else {
                             this.showToast(response.data || 'Error en la operación', 'error');
                             if (errorCallback) errorCallback(response);

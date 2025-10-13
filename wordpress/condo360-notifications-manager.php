@@ -39,6 +39,7 @@ class Condo360NotificationsManager {
         wp_localize_script('condo360-notifications-script', 'condo360_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('condo360_notifications_nonce'),
+            'nonce_backup' => wp_create_nonce('condo360_notifications_nonce_' . get_current_user_id()),
             'user_id' => get_current_user_id(),
             'is_admin' => current_user_can('administrator') || current_user_can('editor'),
             'api_url' => $this->api_url,
@@ -190,27 +191,29 @@ class Condo360NotificationsManager {
         error_log('Condo360 AJAX Request - User ID: ' . get_current_user_id());
         error_log('Condo360 AJAX Request - POST data: ' . print_r($_POST, true));
         
-        // Verificar nonce (TEMPORALMENTE DESACTIVADO PARA TESTING)
-        // TODO: Reactivar después de resolver el problema de nonce
-        /*
+        // Verificar nonce con solución robusta
         if (!isset($_POST['nonce'])) {
             error_log('Condo360 AJAX Request - No nonce provided');
             wp_send_json_error('Acceso no autorizado - No se proporcionó nonce');
         }
         
         $nonce = sanitize_text_field($_POST['nonce']);
+        
+        // Verificar nonce con múltiples métodos
         $nonce_valid = wp_verify_nonce($nonce, 'condo360_notifications_nonce');
+        
+        // Si falla, intentar con nonce de sesión (para casos de caché)
+        if (!$nonce_valid && isset($_COOKIE[LOGGED_IN_COOKIE])) {
+            $nonce_valid = wp_verify_nonce($nonce, 'condo360_notifications_nonce_' . get_current_user_id());
+        }
         
         error_log('Condo360 AJAX Request - Nonce received: ' . $nonce);
         error_log('Condo360 AJAX Request - Nonce valid: ' . ($nonce_valid ? 'true' : 'false'));
         
         if (!$nonce_valid) {
             error_log('Condo360 AJAX Request - Nonce verification failed');
-            wp_send_json_error('Acceso no autorizado - Nonce inválido');
+            wp_send_json_error('Acceso no autorizado - Nonce inválido. Recarga la página e intenta de nuevo.');
         }
-        */
-        
-        error_log('Condo360 AJAX Request - Nonce verification TEMPORALMENTE DESACTIVADA');
         
         // Verificar permisos
         if (!current_user_can('administrator') && !current_user_can('editor')) {
