@@ -161,7 +161,7 @@
             }
 
             const html = notifications.map(notification => `
-                <div class="notification-card ${notification.estado_actual ? 'active' : 'inactive'}">
+                <div class="notification-card ${this.getStatusClass(notification)}">
                     <div class="notification-title">${this.escapeHtml(notification.titulo)}</div>
                     <div class="notification-description">${this.escapeHtml(notification.descripcion)}</div>
                     <div class="notification-meta">
@@ -169,7 +169,7 @@
                             <i class="icon-time"></i>
                             ${this.formatDateForDisplay(notification.fecha_notificacion)}
                         </div>
-                        <div class="notification-status ${notification.estado_actual ? 'active' : 'inactive'}">
+                        <div class="notification-status ${this.getStatusClass(notification)}">
                             ${this.getStatusText(notification)}
                         </div>
                     </div>
@@ -216,7 +216,7 @@
                         </div>
                         <div class="date-group">
                             <div class="date-label">Estado:</div>
-                            <div class="notification-status ${notification.estado_actual ? 'active' : 'inactive'}">
+                            <div class="notification-status ${this.getStatusClass(notification)}">
                                 ${this.getStatusText(notification)}
                             </div>
                         </div>
@@ -460,20 +460,53 @@
             console.log('🔍 Formulario poblado - Estado:', $('#condo360-estado').is(':checked'));
         }
 
+        // Obtener clase CSS para el estado
+        getStatusClass(notification) {
+            const statusText = this.getStatusText(notification);
+            
+            switch (statusText) {
+                case 'Activa':
+                    return 'active';
+                case 'Programada':
+                    return 'programada';
+                case 'Expirada':
+                    return 'expirada';
+                case 'Inactiva':
+                default:
+                    return 'inactive';
+            }
+        }
+
         // Obtener texto de estado más descriptivo
         getStatusText(notification) {
             const now = new Date();
             const startDate = new Date(notification.fecha_notificacion);
             const endDate = new Date(notification.fecha_fin);
             
-            if (notification.estado_actual) {
-                return 'Activa';
+            // Si tiene estado_actual, usarlo como referencia
+            if (notification.estado_actual !== undefined) {
+                if (notification.estado_actual) {
+                    return 'Activa';
+                } else if (now < startDate) {
+                    return 'Programada';
+                } else if (now > endDate) {
+                    return 'Expirada';
+                } else {
+                    return 'Inactiva';
+                }
+            }
+            
+            // Si no tiene estado_actual, calcular basándose en fechas y estado
+            const isEnabled = notification.estado === 1 || notification.estado === true;
+            
+            if (!isEnabled) {
+                return 'Inactiva';
             } else if (now < startDate) {
                 return 'Programada';
             } else if (now > endDate) {
                 return 'Expirada';
             } else {
-                return 'Inactiva';
+                return 'Activa';
             }
         }
 
