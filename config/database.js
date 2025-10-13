@@ -169,3 +169,6 @@ class Database {
             return {};
         }
     }
+}
+
+module.exports = new Database();
