@@ -456,11 +456,21 @@ class Condo360NotificationsManager {
             'callback' => array($this, 'get_active_notifications_rest'),
             'permission_callback' => '__return_true', // Público para usuarios finales
         ));
+        
+        // Endpoint de prueba para verificar conectividad con Node.js
+        register_rest_route('condo360/v1', '/test-api', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'test_api_connection'),
+            'permission_callback' => '__return_true',
+        ));
     }
     
     // Obtener notificaciones activas para usuarios finales
     public function get_active_notifications_rest($request) {
         try {
+            // Log para debugging
+            error_log('🔍 REST API: Iniciando petición a ' . $this->api_url . '/notificaciones/dashboard');
+            
             // Hacer petición al API de Node.js
             $response = wp_remote_get($this->api_url . '/notificaciones/dashboard', array(
                 'timeout' => $this->api_timeout,
@@ -469,21 +479,36 @@ class Condo360NotificationsManager {
                 )
             ));
             
+            // Log de respuesta
             if (is_wp_error($response)) {
-                return new WP_Error('api_error', 'Error al conectar con el servidor', array('status' => 500));
+                error_log('🔍 REST API Error: ' . $response->get_error_message());
+                return new WP_Error('api_error', 'Error al conectar con el servidor: ' . $response->get_error_message(), array('status' => 500));
             }
             
+            $response_code = wp_remote_retrieve_response_code($response);
             $body = wp_remote_retrieve_body($response);
+            
+            error_log('🔍 REST API Response Code: ' . $response_code);
+            error_log('🔍 REST API Response Body: ' . $body);
+            
+            if ($response_code !== 200) {
+                error_log('🔍 REST API Error: Código de respuesta no válido: ' . $response_code);
+                return new WP_Error('api_error', 'Error del servidor API: ' . $response_code, array('status' => 500));
+            }
+            
             $data = json_decode($body, true);
             
             if (!$data || !$data['success']) {
-                return new WP_Error('api_error', 'Error al obtener notificaciones', array('status' => 500));
+                error_log('🔍 REST API Error: Datos no válidos o success=false');
+                return new WP_Error('api_error', 'Error al obtener notificaciones del API', array('status' => 500));
             }
             
             // Filtrar solo notificaciones activas para usuarios finales
             $active_notifications = array_filter($data['data'], function($notification) {
                 return $notification['estado'] == 1 && $notification['estado_actual'] == 1;
             });
+            
+            error_log('🔍 REST API: Notificaciones activas encontradas: ' . count($active_notifications));
             
             return rest_ensure_response(array(
                 'success' => true,
@@ -492,7 +517,54 @@ class Condo360NotificationsManager {
             ));
             
         } catch (Exception $e) {
-            return new WP_Error('server_error', 'Error interno del servidor', array('status' => 500));
+            error_log('🔍 REST API Exception: ' . $e->getMessage());
+            return new WP_Error('server_error', 'Error interno del servidor: ' . $e->getMessage(), array('status' => 500));
+        }
+    }
+    
+    // Función de prueba para verificar conectividad con Node.js
+    public function test_api_connection($request) {
+        try {
+            error_log('🔍 TEST API: Probando conectividad con Node.js');
+            
+            // Probar endpoint básico
+            $response = wp_remote_get($this->api_url . '/notificaciones', array(
+                'timeout' => 10,
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                )
+            ));
+            
+            if (is_wp_error($response)) {
+                error_log('🔍 TEST API Error: ' . $response->get_error_message());
+                return rest_ensure_response(array(
+                    'success' => false,
+                    'error' => 'Error de conexión: ' . $response->get_error_message(),
+                    'api_url' => $this->api_url
+                ));
+            }
+            
+            $response_code = wp_remote_retrieve_response_code($response);
+            $body = wp_remote_retrieve_body($response);
+            
+            error_log('🔍 TEST API Response Code: ' . $response_code);
+            error_log('🔍 TEST API Response Body: ' . substr($body, 0, 200) . '...');
+            
+            return rest_ensure_response(array(
+                'success' => true,
+                'api_url' => $this->api_url,
+                'response_code' => $response_code,
+                'response_preview' => substr($body, 0, 200),
+                'message' => 'Conexión con Node.js exitosa'
+            ));
+            
+        } catch (Exception $e) {
+            error_log('🔍 TEST API Exception: ' . $e->getMessage());
+            return rest_ensure_response(array(
+                'success' => false,
+                'error' => 'Excepción: ' . $e->getMessage(),
+                'api_url' => $this->api_url
+            ));
         }
     }
 }
