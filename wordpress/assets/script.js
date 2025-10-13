@@ -493,35 +493,35 @@
             let isValid = true;
             
             // Validar título
-            if (!$('#titulo').val().trim()) {
-                this.showFieldError('titulo', 'El título es obligatorio');
+            if (!$('#condo360-titulo').val() || !$('#condo360-titulo').val().trim()) {
+                this.showFieldError('condo360-titulo', 'El título es obligatorio');
                 isValid = false;
             } else {
-                this.clearFieldError('titulo');
+                this.clearFieldError('condo360-titulo');
             }
             
             // Validar descripción
-            if (!$('#descripcion').val().trim()) {
-                this.showFieldError('descripcion', 'La descripción es obligatoria');
+            if (!$('#condo360-descripcion').val() || !$('#condo360-descripcion').val().trim()) {
+                this.showFieldError('condo360-descripcion', 'La descripción es obligatoria');
                 isValid = false;
             } else {
-                this.clearFieldError('descripcion');
+                this.clearFieldError('condo360-descripcion');
             }
             
             // Validar fechas
-            const fechaInicio = new Date($('#fecha_notificacion').val());
-            const fechaFin = new Date($('#fecha_fin').val());
+            const fechaInicio = new Date($('#condo360-fecha_notificacion').val());
+            const fechaFin = new Date($('#condo360-fecha_fin').val());
             
             if (!fechaInicio || !fechaFin) {
-                this.showFieldError('fecha_notificacion', 'Las fechas son obligatorias');
-                this.showFieldError('fecha_fin', 'Las fechas son obligatorias');
+                this.showFieldError('condo360-fecha_notificacion', 'Las fechas son obligatorias');
+                this.showFieldError('condo360-fecha_fin', 'Las fechas son obligatorias');
                 isValid = false;
             } else if (fechaFin <= fechaInicio) {
-                this.showFieldError('fecha_fin', 'La fecha de fin debe ser posterior a la fecha de inicio');
+                this.showFieldError('condo360-fecha_fin', 'La fecha de fin debe ser posterior a la fecha de inicio');
                 isValid = false;
             } else {
-                this.clearFieldError('fecha_notificacion');
-                this.clearFieldError('fecha_fin');
+                this.clearFieldError('condo360-fecha_notificacion');
+                this.clearFieldError('condo360-fecha_fin');
             }
             
             return isValid;
@@ -539,13 +539,13 @@
 
         // Validar fechas
         validateDates() {
-            const fechaInicio = new Date($('#fecha_notificacion').val());
-            const fechaFin = new Date($('#fecha_fin').val());
+            const fechaInicio = new Date($('#condo360-fecha_notificacion').val());
+            const fechaFin = new Date($('#condo360-fecha_fin').val());
             
             if (fechaInicio && fechaFin && fechaFin <= fechaInicio) {
-                this.showFieldError('fecha_fin', 'La fecha de fin debe ser posterior a la fecha de inicio');
+                this.showFieldError('condo360-fecha_fin', 'La fecha de fin debe ser posterior a la fecha de inicio');
             } else {
-                this.clearFieldError('fecha_fin');
+                this.clearFieldError('condo360-fecha_fin');
             }
         }
 
