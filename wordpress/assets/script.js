@@ -167,7 +167,7 @@
                     <div class="notification-meta">
                         <div class="notification-time">
                             <i class="icon-time"></i>
-                            ${notification.tiempo_transcurrido.texto_completo}
+                            ${this.formatDateForDisplay(notification.fecha_notificacion)}
                         </div>
                         <div class="notification-status ${notification.estado_actual ? 'active' : 'inactive'}">
                             ${this.getStatusText(notification)}
@@ -516,8 +516,8 @@
                 this.showFieldError('condo360-fecha_notificacion', 'Las fechas son obligatorias');
                 this.showFieldError('condo360-fecha_fin', 'Las fechas son obligatorias');
                 isValid = false;
-            } else if (fechaFin <= fechaInicio) {
-                this.showFieldError('condo360-fecha_fin', 'La fecha de fin debe ser posterior a la fecha de inicio');
+            } else if (fechaFin < fechaInicio) {
+                this.showFieldError('condo360-fecha_fin', 'La fecha de fin debe ser igual o posterior a la fecha de inicio');
                 isValid = false;
             } else {
                 this.clearFieldError('condo360-fecha_notificacion');
@@ -542,8 +542,8 @@
             const fechaInicio = new Date($('#condo360-fecha_notificacion').val());
             const fechaFin = new Date($('#condo360-fecha_fin').val());
             
-            if (fechaInicio && fechaFin && fechaFin <= fechaInicio) {
-                this.showFieldError('condo360-fecha_fin', 'La fecha de fin debe ser posterior a la fecha de inicio');
+            if (fechaInicio && fechaFin && fechaFin < fechaInicio) {
+                this.showFieldError('condo360-fecha_fin', 'La fecha de fin debe ser igual o posterior a la fecha de inicio');
             } else {
                 this.clearFieldError('condo360-fecha_fin');
             }
@@ -725,6 +725,33 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Formatear fecha para mostrar
+        formatDateForDisplay(dateString) {
+            if (!dateString) return 'N/A';
+            
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                
+                if (diffDays > 0) {
+                    return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+                } else if (diffHours > 0) {
+                    return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+                } else if (diffMinutes > 0) {
+                    return `Hace ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
+                } else {
+                    return 'Recién creada';
+                }
+            } catch (error) {
+                console.error('Error formateando fecha:', error);
+                return 'Fecha inválida';
+            }
         }
     }
 

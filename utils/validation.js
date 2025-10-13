@@ -36,12 +36,12 @@ const notificationSchemas = {
         
         fecha_fin: Joi.date()
             .iso()
-            .greater(Joi.ref('fecha_notificacion'))
+            .min(Joi.ref('fecha_notificacion'))
             .required()
             .messages({
                 'date.base': 'La fecha de fin debe ser una fecha válida',
                 'date.format': 'La fecha de fin debe estar en formato ISO',
-                'date.greater': 'La fecha de fin debe ser posterior a la fecha de notificación',
+                'date.min': 'La fecha de fin debe ser igual o posterior a la fecha de notificación',
                 'any.required': 'La fecha de fin es obligatoria'
             }),
         
