@@ -41,6 +41,14 @@
                 e.stopPropagation();
                 this.hideModal();
             });
+            
+            // Event handler para cerrar modal de detalles
+            $(document).on('click', '[data-action="close-details"]', (e) => {
+                console.log('🔍 Botón Cerrar detalles clickeado');
+                e.preventDefault();
+                e.stopPropagation();
+                $('#condo360-details-modal').hide();
+            });
             $(document).on('click', '.condo360-modal', (e) => {
                 if (e.target === e.currentTarget) {
                     this.hideModal();
@@ -382,6 +390,25 @@
                 this.showToast('Notificación guardada exitosamente', 'success');
                 this.hideModal();
                 this.refreshAll();
+                
+                // Enviar notificación push si es una nueva notificación y está activa
+                if (action === 'create_notification' && window.pushNotificationService) {
+                    const notification = {
+                        id: response.data?.id || 'nueva',
+                        titulo: data.titulo,
+                        descripcion: data.descripcion,
+                        fecha_notificacion: data.fecha_notificacion,
+                        fecha_fin: data.fecha_fin,
+                        estado: data.estado ? 1 : 0,
+                        estado_actual: 1 // Asumimos que es activa si se acaba de crear
+                    };
+                    
+                    // Verificar si debe enviarse la notificación
+                    if (window.pushNotificationService.shouldSendNotification(notification)) {
+                        console.log('🔔 Enviando notificación push para nueva notificación:', notification.titulo);
+                        window.pushNotificationService.sendNotification(notification);
+                    }
+                }
             }, () => {
                 btnText.show();
                 btnLoading.hide();
@@ -634,8 +661,9 @@
                 </div>
             `;
             
-            $('#condo360-confirm-message').html(details);
-            $('#condo360-confirm-modal').show();
+            $('#condo360-details-title').text(notification.titulo);
+            $('#condo360-details-content').html(details);
+            $('#condo360-details-modal').show();
         }
 
         // Búsqueda con debounce
@@ -812,6 +840,42 @@
     // Inicializar cuando el documento esté listo
     $(document).ready(function() {
         console.log('🔍 Inicializando Condo360 Notifications...');
+        
+        // Inicializar servicio de notificaciones push
+        window.pushNotificationService = new PushNotificationService();
+        
+        // Verificar estado de permisos al cargar
+        const permissionStatus = window.pushNotificationService.getPermissionStatus();
+        updatePermissionStatus(permissionStatus);
+        
+        // Event handler para solicitar permisos
+        $('#condo360-request-permissions').on('click', async function() {
+            console.log('🔔 Solicitando permisos de notificaciones...');
+            const granted = await window.pushNotificationService.requestPermission();
+            const status = window.pushNotificationService.getPermissionStatus();
+            updatePermissionStatus(status);
+        });
+        
+        // Función para actualizar el estado de permisos en la UI
+        function updatePermissionStatus(status) {
+            const statusElement = $('#condo360-permission-status');
+            const button = $('#condo360-request-permissions');
+            
+            if (!status.supported) {
+                statusElement.text('Las notificaciones no son compatibles con este navegador').addClass('denied').show();
+                button.prop('disabled', true);
+            } else if (status.permission === 'granted') {
+                statusElement.text('✅ Notificaciones activadas').addClass('granted').show();
+                button.text('🔔 Notificaciones Activadas').prop('disabled', true);
+            } else if (status.permission === 'denied') {
+                statusElement.text('❌ Permisos denegados. Activa manualmente en la configuración del navegador.').addClass('denied').show();
+                button.text('🔔 Activar Notificaciones').prop('disabled', false);
+            } else {
+                statusElement.text('⚠️ Haz clic en "Activar Notificaciones Push" para recibir alertas').addClass('default').show();
+                button.text('🔔 Activar Notificaciones Push').prop('disabled', false);
+            }
+        }
+        
         console.log('🔍 Variables disponibles:', typeof condo360_ajax !== 'undefined');
         console.log('🔍 Window condo360_ajax:', typeof window.condo360_ajax !== 'undefined');
         console.log('🔍 Window condo360_ajax content:', window.condo360_ajax);

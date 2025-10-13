@@ -33,8 +33,15 @@ class Condo360NotificationsManager {
     
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
+        wp_enqueue_script(
+            'condo360-notifications-push',
+            plugin_dir_url(__FILE__) . 'assets/push-notifications.js',
+            array(),
+            '1.0.0',
+            true
+        );
         wp_enqueue_style('condo360-notifications-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.0.0');
-        wp_enqueue_script('condo360-notifications-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), '1.0.0', true);
+        wp_enqueue_script('condo360-notifications-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery', 'condo360-notifications-push'), '1.0.0', true);
     }
     
     public function render_notifications_shortcode($atts) {
@@ -99,6 +106,14 @@ class Condo360NotificationsManager {
                         <i class="icon-refresh"></i> Actualizar
                     </button>
                 </div>
+            </div>
+            
+            <!-- Botón para solicitar permisos de notificaciones -->
+            <div class="condo360-permissions-section">
+                <button type="button" id="condo360-request-permissions" class="btn btn-info">
+                    <i class="icon-bell"></i> Activar Notificaciones Push
+                </button>
+                <div id="condo360-permission-status" class="permission-status"></div>
             </div>
             
             <?php if ($atts['show_dashboard'] === 'true'): ?>
@@ -200,6 +215,22 @@ class Condo360NotificationsManager {
                 <div class="condo360-modal-footer">
                     <button type="button" class="btn btn-secondary" data-action="cancel">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="condo360-confirm-action">Confirmar</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de detalles de notificación -->
+        <div id="condo360-details-modal" class="condo360-modal" style="display: none;">
+            <div class="condo360-modal-content condo360-details-modal-content">
+                <div class="condo360-modal-header">
+                    <h3 id="condo360-details-title">Detalles de la Notificación</h3>
+                    <button type="button" class="condo360-close" data-action="close-details">&times;</button>
+                </div>
+                <div class="condo360-modal-body">
+                    <div id="condo360-details-content"></div>
+                </div>
+                <div class="condo360-modal-footer">
+                    <button type="button" class="btn btn-primary" data-action="close-details">Cerrar</button>
                 </div>
             </div>
         </div>

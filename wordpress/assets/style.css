@@ -643,3 +643,92 @@
     padding: 20px;
     border-top: 1px solid #e1e5e9;
 }
+
+/* Modal específico para detalles de notificación */
+.condo360-details-modal-content {
+    max-width: 600px;
+}
+
+.condo360-modal-header {
+    position: relative;
+}
+
+.condo360-modal-header h3 {
+    padding-right: 40px;
+    word-wrap: break-word;
+}
+
+.condo360-close {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Estilos específicos para detalles de notificación */
+.notification-details {
+    line-height: 1.6;
+}
+
+.notification-details h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+}
+
+.notification-details p {
+    margin-bottom: 12px;
+    padding: 8px 0;
+}
+
+.notification-details strong {
+    color: #34495e;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 120px;
+}
+
+/* Sección de permisos de notificaciones */
+.condo360-permissions-section {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+}
+
+.condo360-permissions-section .btn {
+    margin-right: 10px;
+}
+
+.permission-status {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: none;
+}
+
+.permission-status.granted {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+.permission-status.denied {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
+
+.permission-status.default {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    display: block;
+}
+
+.icon-bell::before { content: '🔔'; }
