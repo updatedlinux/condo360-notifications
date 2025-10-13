@@ -103,14 +103,24 @@
                             
                             if (window.pushNotificationService.shouldSendNotification(notification)) {
                                 console.log('🔔 Enviando notificación push:', notification.titulo);
-                                window.pushNotificationService.sendNotification(notification);
                                 
-                                // Marcar como procesada
-                                processedIds.push(notification.id);
-                                localStorage.setItem('condo360_processed_notifications', JSON.stringify(processedIds));
-                                console.log('🔔 Notificación marcada como procesada:', notification.id);
+                                // Enviar notificación y verificar si fue exitosa
+                                const sent = window.pushNotificationService.sendNotification(notification);
+                                
+                                if (sent) {
+                                    // Solo marcar como procesada si se envió exitosamente
+                                    processedIds.push(notification.id);
+                                    localStorage.setItem('condo360_processed_notifications', JSON.stringify(processedIds));
+                                    console.log('🔔 Notificación enviada y marcada como procesada:', notification.id);
+                                } else {
+                                    console.log('🔔 Error al enviar notificación:', notification.titulo);
+                                }
                             } else {
                                 console.log('🔔 Notificación no cumple criterios para envío:', notification);
+                                // Marcar como procesada aunque no se envíe para evitar procesarla repetidamente
+                                processedIds.push(notification.id);
+                                localStorage.setItem('condo360_processed_notifications', JSON.stringify(processedIds));
+                                console.log('🔔 Notificación marcada como procesada (no cumple criterios):', notification.id);
                             }
                         } else {
                             console.log('🔔 Notificación ya procesada:', notification.titulo, 'ID:', notification.id);
@@ -231,6 +241,46 @@
                 })
                 .catch(error => {
                     console.error('🔔 Error al procesar notificación:', error);
+                });
+        },
+        
+        // Función para forzar envío de todas las notificaciones (ignora cache)
+        forceSendAll: function() {
+            if (!window.pushNotificationService) {
+                console.error('🔔 Servicio de notificaciones no disponible');
+                return false;
+            }
+            
+            console.log('🔔 Forzando envío de todas las notificaciones activas...');
+            
+            fetch('/wp-json/condo360/v1/notifications/active')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        console.log('🔔 Enviando', data.data.length, 'notificaciones...');
+                        
+                        data.data.forEach((notification, index) => {
+                            setTimeout(() => {
+                                console.log('🔔 Enviando notificación:', notification.titulo, 'ID:', notification.id);
+                                
+                                if (window.pushNotificationService.shouldSendNotification(notification)) {
+                                    const sent = window.pushNotificationService.sendNotification(notification);
+                                    if (sent) {
+                                        console.log('✅ Notificación enviada:', notification.titulo);
+                                    } else {
+                                        console.log('❌ Error al enviar:', notification.titulo);
+                                    }
+                                } else {
+                                    console.log('⚠️ Notificación no cumple criterios:', notification.titulo);
+                                }
+                            }, index * 1000); // 1 segundo entre cada notificación
+                        });
+                    } else {
+                        console.log('🔔 No hay notificaciones activas para enviar');
+                    }
+                })
+                .catch(error => {
+                    console.error('🔔 Error al obtener notificaciones:', error);
                 });
         }
     };
