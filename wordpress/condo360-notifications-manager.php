@@ -469,10 +469,10 @@ class Condo360NotificationsManager {
     public function get_active_notifications_rest($request) {
         try {
             // Log para debugging
-            error_log('🔍 REST API: Iniciando petición a ' . $this->api_url . '/notificaciones/dashboard');
+            error_log('🔍 REST API: Iniciando petición a ' . $this->api_url . '/notificaciones');
             
-            // Hacer petición al API de Node.js
-            $response = wp_remote_get($this->api_url . '/notificaciones/dashboard', array(
+            // Hacer petición al API de Node.js (usar endpoint que sabemos que funciona)
+            $response = wp_remote_get($this->api_url . '/notificaciones', array(
                 'timeout' => $this->api_timeout,
                 'headers' => array(
                     'Content-Type' => 'application/json',
@@ -503,8 +503,18 @@ class Condo360NotificationsManager {
                 return new WP_Error('api_error', 'Error al obtener notificaciones del API', array('status' => 500));
             }
             
+            // Obtener notificaciones de la estructura correcta de Node.js
+            $notifications = array();
+            if (isset($data['data']['notifications'])) {
+                $notifications = $data['data']['notifications'];
+            } elseif (isset($data['data']) && is_array($data['data'])) {
+                $notifications = $data['data'];
+            }
+            
+            error_log('🔍 REST API: Notificaciones obtenidas del API: ' . count($notifications));
+            
             // Filtrar solo notificaciones activas para usuarios finales
-            $active_notifications = array_filter($data['data'], function($notification) {
+            $active_notifications = array_filter($notifications, function($notification) {
                 return $notification['estado'] == 1 && $notification['estado_actual'] == 1;
             });
             
