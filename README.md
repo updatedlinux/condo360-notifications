@@ -9,7 +9,7 @@ API RESTful desarrollada en Node.js para gestionar notificaciones push que se vi
 - ✅ API RESTful completa con endpoints CRUD
 - ✅ Manejo correcto de zonas horarias (UTC para almacenamiento, GMT-4 para visualización)
 - ✅ Sistema de notificaciones push automáticas
-- ✅ Validación de administradores de WordPress
+- ✅ Validación de administradores de WordPress (sin JWT)
 - ✅ Documentación Swagger completa
 - ✅ Shortcode de WordPress para gestión
 - ✅ Desactivación automática de notificaciones expiradas
@@ -229,9 +229,9 @@ VALUES (1, 1, 1);
 
 ## Seguridad
 
-- Validación de permisos de administrador
+- Validación de permisos de administrador (sin JWT, uso interno)
 - Rate limiting (100 requests/15min por IP)
-- CORS configurado para acceso libre
+- CORS configurado para acceso libre (uso interno)
 - Sanitización de datos de entrada
 - Validación con Joi
 

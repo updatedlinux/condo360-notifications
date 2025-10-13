@@ -20,7 +20,7 @@ app.use(helmet());
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-User-ID']
+    allowedHeaders: ['Content-Type', 'X-User-ID']
 }));
 
 // Rate limiting
@@ -68,6 +68,14 @@ const swaggerOptions = {
             }
         ],
         components: {
+            securitySchemes: {
+                AdminHeader: {
+                    type: 'apiKey',
+                    in: 'header',
+                    name: 'X-User-ID',
+                    description: 'ID del usuario administrador de WordPress'
+                }
+            },
             schemas: {
                 Notificacion: {
                     type: 'object',
@@ -493,7 +501,7 @@ app.get('/notificaciones/:id', async (req, res) => {
  *     summary: Crear una nueva notificación
  *     tags: [Notificaciones]
  *     security:
- *       - AdminAuth: []
+ *       - AdminHeader: []
  *     requestBody:
  *       required: true
  *       content:
@@ -631,7 +639,7 @@ app.post('/notificaciones', requireAdmin, async (req, res) => {
  *     summary: Actualizar una notificación existente
  *     tags: [Notificaciones]
  *     security:
- *       - AdminAuth: []
+ *       - AdminHeader: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -785,7 +793,7 @@ app.put('/notificaciones/:id', requireAdmin, async (req, res) => {
  *     summary: Eliminar una notificación
  *     tags: [Notificaciones]
  *     security:
- *       - AdminAuth: []
+ *       - AdminHeader: []
  *     parameters:
  *       - in: path
  *         name: id

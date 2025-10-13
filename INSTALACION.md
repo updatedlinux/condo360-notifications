@@ -243,7 +243,7 @@ Acceder al endpoint del dashboard para ver la notificación creada.
 ### Error 403 en endpoints de administrador
 
 1. Verificar que el usuario tenga rol de administrador en WordPress
-2. Verificar que el header `X-User-ID` esté presente
+2. Verificar que el header `X-User-ID` esté presente (no se usa JWT)
 3. Verificar que el ID del usuario sea válido
 
 ### Plugin de WordPress no aparece
