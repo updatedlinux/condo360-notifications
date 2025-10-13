@@ -483,6 +483,9 @@
         // Hacer petición AJAX
         makeRequest(action, data, successCallback, errorCallback) {
             console.log('🔍 Haciendo petición:', action, data);
+            console.log('🔍 User ID:', condo360_ajax.user_id);
+            console.log('🔍 Nonce:', condo360_ajax.nonce);
+            console.log('🔍 AJAX URL:', condo360_ajax.ajax_url);
             
             $.ajax({
                 url: condo360_ajax.ajax_url,
@@ -491,6 +494,7 @@
                     action: 'condo360_notifications_action',
                     action_type: action,
                     nonce: condo360_ajax.nonce,
+                    user_id: condo360_ajax.user_id,
                     ...data
                 },
                 success: function(response) {
@@ -550,6 +554,8 @@
             console.log('🔍 AJAX URL:', condo360_ajax.ajax_url);
             console.log('🔍 User ID:', condo360_ajax.user_id);
             console.log('🔍 Is Admin:', condo360_ajax.is_admin);
+            console.log('🔍 Nonce:', condo360_ajax.nonce);
+            console.log('🔍 Debug Info:', condo360_ajax.debug);
             new Condo360Notifications();
         } else {
             console.error('❌ Variables de AJAX no están disponibles');

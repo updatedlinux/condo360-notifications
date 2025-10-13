@@ -40,7 +40,13 @@ class Condo360NotificationsManager {
             'nonce' => wp_create_nonce('condo360_notifications_nonce'),
             'user_id' => get_current_user_id(),
             'is_admin' => current_user_can('administrator') || current_user_can('editor'),
-            'api_url' => $this->api_url
+            'api_url' => $this->api_url,
+            'debug' => array(
+                'user_roles' => wp_get_current_user()->roles,
+                'user_caps' => wp_get_current_user()->allcaps,
+                'current_user_can_admin' => current_user_can('administrator'),
+                'current_user_can_editor' => current_user_can('editor')
+            )
         ));
     }
     
@@ -179,14 +185,20 @@ class Condo360NotificationsManager {
     }
     
     public function handle_ajax_request() {
+        // Debugging
+        error_log('Condo360 AJAX Request - User ID: ' . get_current_user_id());
+        error_log('Condo360 AJAX Request - POST data: ' . print_r($_POST, true));
+        
         // Verificar nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'condo360_notifications_nonce')) {
-            wp_die('Acceso no autorizado');
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'condo360_notifications_nonce')) {
+            error_log('Condo360 AJAX Request - Nonce verification failed');
+            wp_send_json_error('Acceso no autorizado - Nonce inválido');
         }
         
         // Verificar permisos
         if (!current_user_can('administrator') && !current_user_can('editor')) {
-            wp_die('Permisos insuficientes');
+            error_log('Condo360 AJAX Request - Insufficient permissions for user: ' . get_current_user_id());
+            wp_send_json_error('Permisos insuficientes - Se requiere rol de administrador');
         }
         
         $action = sanitize_text_field($_POST['action_type']);
