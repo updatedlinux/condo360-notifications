@@ -46,12 +46,13 @@ class Condo360NotificationsManager {
         // Asegurar que los scripts estén cargados
         $this->enqueue_scripts();
         
-        // Localizar script con contexto de usuario completo
+        // Obtener datos del usuario
         $user_id = get_current_user_id();
         $is_logged_in = is_user_logged_in();
         $current_user = wp_get_current_user();
         
-        wp_localize_script('condo360-notifications-script', 'condo360_ajax', array(
+        // Crear script inline con variables de usuario
+        $ajax_data = array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('condo360_notifications_nonce'),
             'nonce_backup' => wp_create_nonce('condo360_notifications_nonce_' . $user_id),
@@ -70,7 +71,11 @@ class Condo360NotificationsManager {
                 'user_login' => $current_user->user_login,
                 'user_email' => $current_user->user_email
             )
-        ));
+        );
+        
+        // Script inline para definir variables
+        $script_data = json_encode($ajax_data);
+        $inline_script = "window.condo360_ajax = {$script_data};";
         
         $atts = shortcode_atts(array(
             'show_dashboard' => 'true',
@@ -79,6 +84,11 @@ class Condo360NotificationsManager {
         
         ob_start();
         ?>
+        <!-- Script inline con variables de usuario -->
+        <script type="text/javascript">
+            <?php echo $inline_script; ?>
+        </script>
+        
         <div class="condo360-notifications-container">
             <div class="condo360-notifications-header">
                 <div class="condo360-notifications-actions">

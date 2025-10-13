@@ -652,30 +652,40 @@
     $(document).ready(function() {
         console.log('🔍 Inicializando Condo360 Notifications...');
         console.log('🔍 Variables disponibles:', typeof condo360_ajax !== 'undefined');
+        console.log('🔍 Window condo360_ajax:', typeof window.condo360_ajax !== 'undefined');
+        console.log('🔍 Window condo360_ajax content:', window.condo360_ajax);
         
-        if (typeof condo360_ajax !== 'undefined') {
-            console.log('🔍 AJAX URL:', condo360_ajax.ajax_url);
-            console.log('🔍 User ID:', condo360_ajax.user_id);
-            console.log('🔍 Is Admin:', condo360_ajax.is_admin);
-            console.log('🔍 Is Logged In:', condo360_ajax.is_logged_in);
-            console.log('🔍 Nonce:', condo360_ajax.nonce);
-            console.log('🔍 Debug Info:', condo360_ajax.debug);
-            console.log('🔍 User Login:', condo360_ajax.debug?.user_login);
-            console.log('🔍 User Email:', condo360_ajax.debug?.user_email);
-            console.log('🔍 User Roles:', condo360_ajax.debug?.user_roles);
+        // Usar window.condo360_ajax como fallback si condo360_ajax no está disponible
+        var ajaxData = typeof condo360_ajax !== 'undefined' ? condo360_ajax : window.condo360_ajax;
+        
+        if (typeof ajaxData !== 'undefined') {
+            console.log('🔍 AJAX URL:', ajaxData.ajax_url);
+            console.log('🔍 User ID:', ajaxData.user_id);
+            console.log('🔍 Is Admin:', ajaxData.is_admin);
+            console.log('🔍 Is Logged In:', ajaxData.is_logged_in);
+            console.log('🔍 Nonce:', ajaxData.nonce);
+            console.log('🔍 Debug Info:', ajaxData.debug);
+            console.log('🔍 User Login:', ajaxData.debug?.user_login);
+            console.log('🔍 User Email:', ajaxData.debug?.user_email);
+            console.log('🔍 User Roles:', ajaxData.debug?.user_roles);
             
             // Verificar que las variables críticas estén disponibles
-            if (!condo360_ajax.user_id || condo360_ajax.user_id === 0) {
-                console.error('❌ User ID no disponible o es 0:', condo360_ajax.user_id);
-                console.error('❌ Usuario logueado:', condo360_ajax.is_logged_in);
+            if (!ajaxData.user_id || ajaxData.user_id === 0) {
+                console.error('❌ User ID no disponible o es 0:', ajaxData.user_id);
+                console.error('❌ Usuario logueado:', ajaxData.is_logged_in);
                 $('#condo360-dashboard-notifications').html('<div class="error">Error: Debes estar logueado para usar esta funcionalidad</div>');
                 $('#condo360-notifications-list').html('<div class="error">Error: Debes estar logueado para usar esta funcionalidad</div>');
                 return;
             }
             
+            // Asignar ajaxData a condo360_ajax para compatibilidad
+            window.condo360_ajax = ajaxData;
+            
             new Condo360Notifications();
         } else {
             console.error('❌ Variables de AJAX no están disponibles');
+            console.error('❌ condo360_ajax:', typeof condo360_ajax);
+            console.error('❌ window.condo360_ajax:', typeof window.condo360_ajax);
             $('#condo360-dashboard-notifications').html('<div class="error">Error: Variables de configuración no disponibles</div>');
             $('#condo360-notifications-list').html('<div class="error">Error: Variables de configuración no disponibles</div>');
         }
