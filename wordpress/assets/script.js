@@ -25,10 +25,18 @@
             $(document).on('click', '[data-action="refresh"]', () => this.refreshAll());
             
             // Modal
-            $(document).on('click', '.close', () => this.hideModal());
-            $(document).on('click', '[data-action="cancel"]', () => this.hideModal());
+            $(document).on('click', '.close', (e) => {
+                e.preventDefault();
+                this.hideModal();
+            });
+            $(document).on('click', '[data-action="cancel"]', (e) => {
+                e.preventDefault();
+                this.hideModal();
+            });
             $(document).on('click', '.modal', (e) => {
-                if (e.target === e.currentTarget) this.hideModal();
+                if (e.target === e.currentTarget) {
+                    this.hideModal();
+                }
             });
 
             // Formulario
@@ -55,6 +63,9 @@
         loadDashboardNotifications() {
             this.makeRequest('get_dashboard', {}, (response) => {
                 this.renderDashboardNotifications(response.data);
+            }, (error) => {
+                console.error('Error al cargar dashboard:', error);
+                $('#condo360-dashboard-notifications').html('<div class="error">Error al cargar notificaciones del dashboard</div>');
             });
         }
 
@@ -69,6 +80,9 @@
             this.makeRequest('get_notifications', data, (response) => {
                 this.renderNotificationsList(response.data.notifications);
                 this.renderPagination(response.data.pagination);
+            }, (error) => {
+                console.error('Error al cargar notificaciones:', error);
+                $('#condo360-notifications-list').html('<div class="error">Error al cargar la lista de notificaciones</div>');
             });
         }
 
@@ -104,7 +118,7 @@
         renderNotificationsList(notifications) {
             const container = $('#condo360-notifications-list');
             
-            if (notifications.length === 0) {
+            if (!notifications || notifications.length === 0) {
                 container.html('<div class="no-notifications">No se encontraron notificaciones</div>');
                 return;
             }
@@ -129,11 +143,11 @@
                     <div class="notification-item-dates">
                         <div class="date-group">
                             <div class="date-label">Fecha de inicio:</div>
-                            <div>${notification.fecha_notificacion_local}</div>
+                            <div>${notification.fecha_notificacion_local || 'N/A'}</div>
                         </div>
                         <div class="date-group">
                             <div class="date-label">Fecha de fin:</div>
-                            <div>${notification.fecha_fin_local}</div>
+                            <div>${notification.fecha_fin_local || 'N/A'}</div>
                         </div>
                         <div class="date-group">
                             <div class="date-label">Estado:</div>
@@ -295,8 +309,11 @@
 
         // Ocultar modal
         hideModal() {
-            $('.modal').hide();
+            console.log('🔍 Cerrando modal...');
+            $('#condo360-notification-modal').hide();
+            $('#condo360-confirm-modal').hide();
             this.currentNotification = null;
+            this.clearErrors();
         }
 
         // Resetear formulario
@@ -465,6 +482,8 @@
 
         // Hacer petición AJAX
         makeRequest(action, data, successCallback, errorCallback) {
+            console.log('🔍 Haciendo petición:', action, data);
+            
             $.ajax({
                 url: condo360_ajax.ajax_url,
                 type: 'POST',
@@ -475,15 +494,18 @@
                     ...data
                 },
                 success: function(response) {
+                    console.log('✅ Respuesta recibida:', response);
                     if (response.success) {
                         successCallback(response);
                     } else {
+                        console.error('❌ Error en respuesta:', response);
                         this.showToast(response.data?.error || 'Error en la operación', 'error');
                         if (errorCallback) errorCallback(response);
                     }
                 }.bind(this),
                 error: function(xhr, status, error) {
-                    this.showToast('Error de conexión', 'error');
+                    console.error('❌ Error de AJAX:', xhr, status, error);
+                    this.showToast('Error de conexión: ' + error, 'error');
                     if (errorCallback) errorCallback(xhr);
                 }.bind(this)
             });
@@ -521,8 +543,18 @@
 
     // Inicializar cuando el documento esté listo
     $(document).ready(function() {
+        console.log('🔍 Inicializando Condo360 Notifications...');
+        console.log('🔍 Variables disponibles:', typeof condo360_ajax !== 'undefined');
+        
         if (typeof condo360_ajax !== 'undefined') {
+            console.log('🔍 AJAX URL:', condo360_ajax.ajax_url);
+            console.log('🔍 User ID:', condo360_ajax.user_id);
+            console.log('🔍 Is Admin:', condo360_ajax.is_admin);
             new Condo360Notifications();
+        } else {
+            console.error('❌ Variables de AJAX no están disponibles');
+            $('#condo360-dashboard-notifications').html('<div class="error">Error: Variables de configuración no disponibles</div>');
+            $('#condo360-notifications-list').html('<div class="error">Error: Variables de configuración no disponibles</div>');
         }
     });
 

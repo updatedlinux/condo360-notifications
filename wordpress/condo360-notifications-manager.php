@@ -59,7 +59,6 @@ class Condo360NotificationsManager {
         ?>
         <div class="condo360-notifications-container">
             <div class="condo360-notifications-header">
-                <h2>Gestión de Notificaciones Condo360</h2>
                 <div class="condo360-notifications-actions">
                     <button type="button" class="btn btn-primary" data-action="create">
                         <i class="icon-plus"></i> Nueva Notificación

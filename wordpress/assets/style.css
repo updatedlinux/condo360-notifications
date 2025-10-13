@@ -502,6 +502,28 @@
     font-weight: 500;
 }
 
+.error {
+    background-color: #fadbd8;
+    color: #e74c3c;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #f5c6cb;
+    text-align: center;
+    font-weight: 500;
+    margin: 10px 0;
+}
+
+.no-notifications {
+    background-color: #e8f4fd;
+    color: #2980b9;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #bee5eb;
+    text-align: center;
+    font-style: italic;
+    margin: 20px 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .condo360-notifications-header {
