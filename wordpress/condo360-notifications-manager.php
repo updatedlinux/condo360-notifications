@@ -36,18 +36,24 @@ class Condo360NotificationsManager {
         wp_enqueue_style('condo360-notifications-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.0.0');
         wp_enqueue_script('condo360-notifications-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), '1.0.0', true);
         
+        $user_id = get_current_user_id();
+        $is_logged_in = is_user_logged_in();
+        
         wp_localize_script('condo360-notifications-script', 'condo360_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('condo360_notifications_nonce'),
-            'nonce_backup' => wp_create_nonce('condo360_notifications_nonce_' . get_current_user_id()),
-            'user_id' => get_current_user_id(),
+            'nonce_backup' => wp_create_nonce('condo360_notifications_nonce_' . $user_id),
+            'user_id' => $user_id,
+            'is_logged_in' => $is_logged_in,
             'is_admin' => current_user_can('administrator') || current_user_can('editor'),
             'api_url' => $this->api_url,
             'debug' => array(
                 'user_roles' => wp_get_current_user()->roles,
                 'user_caps' => wp_get_current_user()->allcaps,
                 'current_user_can_admin' => current_user_can('administrator'),
-                'current_user_can_editor' => current_user_can('editor')
+                'current_user_can_editor' => current_user_can('editor'),
+                'wp_get_current_user' => wp_get_current_user(),
+                'is_user_logged_in' => is_user_logged_in()
             )
         ));
     }

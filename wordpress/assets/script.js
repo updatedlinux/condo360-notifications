@@ -64,12 +64,21 @@
             this.makeRequest('get_dashboard', {}, (response) => {
                 console.log('🔍 Respuesta get_dashboard:', response);
                 
-                // Verificar estructura de respuesta
-                if (response.data) {
-                    this.renderDashboardNotifications(response.data);
+                // Verificar estructura de respuesta - puede ser directamente un array o un objeto con data
+                let notifications = null;
+                if (Array.isArray(response.data)) {
+                    notifications = response.data;
+                } else if (response.data && Array.isArray(response.data.data)) {
+                    notifications = response.data.data;
+                } else if (response.data && response.data.success && Array.isArray(response.data.data)) {
+                    notifications = response.data.data;
+                }
+                
+                if (notifications !== null) {
+                    this.renderDashboardNotifications(notifications);
                 } else {
                     console.error('❌ Estructura de respuesta incorrecta:', response);
-                    $('#condo360-dashboard-notifications').html('<div class="error">Error: Estructura de datos incorrecta</div>');
+                    $('#condo360-dashboard-notifications').html('<div class="error">Error: Formato de datos incorrecto</div>');
                 }
             }, (error) => {
                 console.error('Error al cargar dashboard:', error);
@@ -88,13 +97,28 @@
             this.makeRequest('get_notifications', data, (response) => {
                 console.log('🔍 Respuesta get_notifications:', response);
                 
-                // Verificar estructura de respuesta
-                if (response.data && response.data.notifications) {
-                    this.renderNotificationsList(response.data.notifications);
-                    this.renderPagination(response.data.pagination);
+                // Verificar estructura de respuesta - puede ser directamente un objeto o anidado
+                let notifications = null;
+                let pagination = null;
+                
+                if (response.data && response.data.notifications && response.data.pagination) {
+                    // Estructura esperada: {notifications: [...], pagination: {...}}
+                    notifications = response.data.notifications;
+                    pagination = response.data.pagination;
+                } else if (response.data && response.data.data) {
+                    // Estructura anidada: {data: {notifications: [...], pagination: {...}}}
+                    if (response.data.data.notifications && response.data.data.pagination) {
+                        notifications = response.data.data.notifications;
+                        pagination = response.data.data.pagination;
+                    }
+                }
+                
+                if (notifications !== null) {
+                    this.renderNotificationsList(notifications);
+                    this.renderPagination(pagination);
                 } else {
                     console.error('❌ Estructura de respuesta incorrecta:', response);
-                    $('#condo360-notifications-list').html('<div class="error">Error: Estructura de datos incorrecta</div>');
+                    $('#condo360-notifications-list').html('<div class="error">Error: Formato de datos incorrecto</div>');
                 }
             }, (error) => {
                 console.error('Error al cargar notificaciones:', error);
@@ -635,6 +659,16 @@
             console.log('🔍 Is Admin:', condo360_ajax.is_admin);
             console.log('🔍 Nonce:', condo360_ajax.nonce);
             console.log('🔍 Debug Info:', condo360_ajax.debug);
+            
+            // Verificar que las variables críticas estén disponibles
+            if (!condo360_ajax.user_id || condo360_ajax.user_id === 0) {
+                console.error('❌ User ID no disponible o es 0:', condo360_ajax.user_id);
+                console.error('❌ Usuario logueado:', condo360_ajax.is_logged_in);
+                $('#condo360-dashboard-notifications').html('<div class="error">Error: Debes estar logueado para usar esta funcionalidad</div>');
+                $('#condo360-notifications-list').html('<div class="error">Error: Debes estar logueado para usar esta funcionalidad</div>');
+                return;
+            }
+            
             new Condo360Notifications();
         } else {
             console.error('❌ Variables de AJAX no están disponibles');
