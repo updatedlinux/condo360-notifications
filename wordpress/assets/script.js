@@ -60,11 +60,24 @@
             $(document).on('click', '[data-action="view"]', (e) => this.viewNotification(e));
             
             // Confirmación
-            $(document).on('click', '#confirm-action', (e) => {
-                console.log('🔍 Botón Confirmar clickeado');
+            $(document).on('click', '#condo360-confirm-modal #confirm-action', (e) => {
+                console.log('🔍 Botón Confirmar clickeado (específico)');
                 console.log('🔍 Event:', e);
                 console.log('🔍 Target:', e.target);
                 console.log('🔍 Current target:', e.currentTarget);
+                e.preventDefault();
+                e.stopPropagation();
+                this.confirmAction();
+            });
+            
+            // También agregar el event handler original como fallback
+            $(document).on('click', '#confirm-action', (e) => {
+                console.log('🔍 Botón Confirmar clickeado (fallback)');
+                console.log('🔍 Event:', e);
+                console.log('🔍 Target:', e.target);
+                console.log('🔍 Current target:', e.currentTarget);
+                e.preventDefault();
+                e.stopPropagation();
                 this.confirmAction();
             });
             
@@ -334,6 +347,18 @@
             
             $('#confirm-message').text('¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.');
             $('#condo360-confirm-modal').show();
+            
+            // Debugging: verificar que el botón existe
+            console.log('🔍 Verificando botón confirm-action...');
+            console.log('🔍 Botón existe:', $('#confirm-action').length);
+            console.log('🔍 Botón en modal:', $('#condo360-confirm-modal #confirm-action').length);
+            console.log('🔍 Botón visible:', $('#confirm-action').is(':visible'));
+            
+            // Intentar hacer clic programáticamente para testing
+            setTimeout(() => {
+                console.log('🔍 Intentando clic programático...');
+                $('#confirm-action').trigger('click');
+            }, 1000);
         }
 
         // Manejar envío del formulario
