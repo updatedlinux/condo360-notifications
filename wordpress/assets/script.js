@@ -479,33 +479,54 @@
 
         // Obtener texto de estado más descriptivo
         getStatusText(notification) {
+            console.log('🔍 getStatusText - Datos recibidos:', notification);
+            
             const now = new Date();
             const startDate = new Date(notification.fecha_notificacion);
             const endDate = new Date(notification.fecha_fin);
             
+            console.log('🔍 getStatusText - Fechas:', {
+                now: now.toISOString(),
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                estado_actual: notification.estado_actual,
+                estado: notification.estado
+            });
+            
             // Si tiene estado_actual, usarlo como referencia
             if (notification.estado_actual !== undefined) {
+                console.log('🔍 getStatusText - Usando estado_actual:', notification.estado_actual);
                 if (notification.estado_actual) {
+                    console.log('🔍 getStatusText - Retornando: Activa');
                     return 'Activa';
                 } else if (now < startDate) {
+                    console.log('🔍 getStatusText - Retornando: Programada');
                     return 'Programada';
                 } else if (now > endDate) {
+                    console.log('🔍 getStatusText - Retornando: Expirada');
                     return 'Expirada';
                 } else {
+                    console.log('🔍 getStatusText - Retornando: Inactiva (estado_actual false)');
                     return 'Inactiva';
                 }
             }
             
             // Si no tiene estado_actual, calcular basándose en fechas y estado
+            console.log('🔍 getStatusText - Calculando sin estado_actual');
             const isEnabled = notification.estado === 1 || notification.estado === true;
+            console.log('🔍 getStatusText - isEnabled:', isEnabled);
             
             if (!isEnabled) {
+                console.log('🔍 getStatusText - Retornando: Inactiva (estado false)');
                 return 'Inactiva';
             } else if (now < startDate) {
+                console.log('🔍 getStatusText - Retornando: Programada');
                 return 'Programada';
             } else if (now > endDate) {
+                console.log('🔍 getStatusText - Retornando: Expirada');
                 return 'Expirada';
             } else {
+                console.log('🔍 getStatusText - Retornando: Activa (calculado)');
                 return 'Activa';
             }
         }
