@@ -11,10 +11,7 @@ class Database {
             database: process.env.DB_NAME || 'wordpress',
             port: process.env.DB_PORT || 3306,
             charset: 'utf8mb4',
-            timezone: 'Z', // UTC
-            acquireTimeout: 60000,
-            timeout: 60000,
-            reconnect: true
+            timezone: 'Z' // UTC
         };
     }
 
@@ -34,12 +31,20 @@ class Database {
             if (!this.connection) {
                 await this.connect();
             }
+            
+            // Log de consulta para debugging
+            if (process.env.NODE_ENV === 'development') {
+                console.log('🔍 SQL Query:', sql);
+                console.log('🔍 Params:', params);
+            }
+            
             const [rows] = await this.connection.execute(sql, params);
             return rows;
         } catch (error) {
             console.error('❌ Error en consulta SQL:', error.message);
-            console.error('SQL:', sql);
-            console.error('Params:', params);
+            console.error('❌ SQL:', sql);
+            console.error('❌ Params:', params);
+            console.error('❌ Error completo:', error);
             throw error;
         }
     }

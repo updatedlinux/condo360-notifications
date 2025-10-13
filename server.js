@@ -15,6 +15,9 @@ const pushNotificationService = require('./services/pushNotificationService');
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+// Configurar Express para confiar en proxy (para rate limiting)
+app.set('trust proxy', 1);
+
 // Middleware de seguridad
 app.use(helmet());
 app.use(cors({
@@ -304,8 +307,8 @@ app.get('/notificaciones', async (req, res) => {
                 END as estado_actual
             FROM wp_notificaciones 
             ORDER BY created_at DESC 
-            LIMIT ? OFFSET ?
-        `, [limit, offset]);
+            LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
+        `);
 
         // Contar total de notificaciones
         const [countResult] = await database.query('SELECT COUNT(*) as total FROM wp_notificaciones');
