@@ -88,34 +88,46 @@
                 if (data.success && data.data && data.data.length > 0) {
                     console.log('🔔 Notificaciones activas encontradas:', data.data.length);
                     
-                    // Verificar si hay notificaciones nuevas
-                    const lastCheck = localStorage.getItem('condo360_last_notification_check');
+                    // Obtener IDs de notificaciones ya procesadas
+                    const processedIds = JSON.parse(localStorage.getItem('condo360_processed_notifications') || '[]');
                     const currentTime = new Date().toISOString();
                     
-                    console.log('🔔 Último check:', lastCheck);
-                    console.log('🔔 Tiempo actual:', currentTime);
+                    console.log('🔔 IDs ya procesados:', processedIds);
                     
                     data.data.forEach(notification => {
-                        console.log('🔔 Procesando notificación:', notification.titulo, 'Creada:', notification.created_at);
+                        console.log('🔔 Procesando notificación:', notification.titulo, 'ID:', notification.id);
                         
-                        // Solo enviar si es nueva (creada después del último check)
-                        if (!lastCheck || notification.created_at > lastCheck) {
-                            console.log('🔔 Notificación nueva detectada:', notification.titulo);
+                        // Solo enviar si no hemos procesado esta notificación antes
+                        if (!processedIds.includes(notification.id)) {
+                            console.log('🔔 Notificación nueva detectada:', notification.titulo, 'ID:', notification.id);
                             
                             if (window.pushNotificationService.shouldSendNotification(notification)) {
                                 console.log('🔔 Enviando notificación push:', notification.titulo);
                                 window.pushNotificationService.sendNotification(notification);
+                                
+                                // Marcar como procesada
+                                processedIds.push(notification.id);
+                                localStorage.setItem('condo360_processed_notifications', JSON.stringify(processedIds));
+                                console.log('🔔 Notificación marcada como procesada:', notification.id);
                             } else {
                                 console.log('🔔 Notificación no cumple criterios para envío:', notification);
                             }
                         } else {
-                            console.log('🔔 Notificación ya conocida:', notification.titulo);
+                            console.log('🔔 Notificación ya procesada:', notification.titulo, 'ID:', notification.id);
                         }
                     });
                     
-                    // Actualizar timestamp del último check
-                    localStorage.setItem('condo360_last_notification_check', currentTime);
-                    console.log('🔔 Timestamp actualizado:', currentTime);
+                    // Limpiar IDs antiguos (más de 24 horas)
+                    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                    const filteredIds = processedIds.filter(id => {
+                        // Mantener solo IDs de notificaciones que aún existen
+                        return data.data.some(n => n.id === id);
+                    });
+                    
+                    if (filteredIds.length !== processedIds.length) {
+                        localStorage.setItem('condo360_processed_notifications', JSON.stringify(filteredIds));
+                        console.log('🔔 Cache de IDs limpiado');
+                    }
                 } else {
                     console.log('🔔 No hay notificaciones activas');
                 }
@@ -180,6 +192,46 @@
         checkNow: function() {
             console.log('🔔 Verificación manual de notificaciones...');
             checkForNewNotifications();
+        },
+        
+        // Función para limpiar cache y procesar todas las notificaciones
+        clearCacheAndCheck: function() {
+            console.log('🔔 Limpiando cache y verificando todas las notificaciones...');
+            localStorage.removeItem('condo360_processed_notifications');
+            localStorage.removeItem('condo360_last_notification_check');
+            checkForNewNotifications();
+        },
+        
+        // Función para procesar notificación específica por ID
+        processNotificationById: function(id) {
+            if (!window.pushNotificationService) {
+                console.error('🔔 Servicio de notificaciones no disponible');
+                return false;
+            }
+            
+            console.log('🔔 Procesando notificación específica ID:', id);
+            
+            fetch('/wp-json/condo360/v1/notifications/active')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        const notification = data.data.find(n => n.id == id);
+                        if (notification) {
+                            console.log('🔔 Notificación encontrada:', notification.titulo);
+                            if (window.pushNotificationService.shouldSendNotification(notification)) {
+                                console.log('🔔 Enviando notificación push:', notification.titulo);
+                                window.pushNotificationService.sendNotification(notification);
+                            } else {
+                                console.log('🔔 Notificación no cumple criterios:', notification);
+                            }
+                        } else {
+                            console.log('🔔 Notificación no encontrada con ID:', id);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('🔔 Error al procesar notificación:', error);
+                });
         }
     };
     
