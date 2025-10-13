@@ -1,5 +1,5 @@
-const database = require('./config/database');
-const timezoneHelper = require('./utils/timezone');
+const database = require('../config/database');
+const timezoneHelper = require('../utils/timezone');
 
 class PushNotificationService {
     constructor() {

@@ -106,13 +106,13 @@ npm start
 ```
 
 El servidor estará disponible en:
-- Desarrollo: `http://localhost:3001`
+- Desarrollo: `http://localhost:3002`
 - Producción: `https://notifications.bonaventurecclub.com`
 
 ### Documentación API
 
 La documentación Swagger estará disponible en:
-- `http://localhost:3001/api-docs`
+- `http://localhost:3002/api-docs`
 
 ## Endpoints de la API
 

@@ -13,7 +13,7 @@ const { notificationSchemas, authSchemas, validateData } = require('./utils/vali
 const pushNotificationService = require('./services/pushNotificationService');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Middleware de seguridad
 app.use(helmet());
@@ -63,7 +63,7 @@ const swaggerOptions = {
                 description: 'Servidor de producción'
             },
             {
-                url: `http://localhost:${PORT}`,
+                url: `http://localhost:3002`,
                 description: 'Servidor de desarrollo'
             }
         ],

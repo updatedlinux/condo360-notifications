@@ -68,7 +68,7 @@ npm run dev
 npm start
 ```
 
-El servidor estará disponible en `http://localhost:3001`
+El servidor estará disponible en `http://localhost:3002`
 
 ## Paso 2: Configuración de WordPress
 
@@ -115,7 +115,7 @@ O con opciones específicas:
    - **Domain Names**: `notifications.bonaventurecclub.com`
    - **Scheme**: `http`
    - **Forward Hostname/IP**: `localhost` (o IP del servidor)
-   - **Forward Port**: `3001`
+   - **Forward Port**: `3002`
    - **Forward Path**: `/`
 
 ### 3.2 Configurar SSL
@@ -141,20 +141,20 @@ DB_NAME=tu_bd_produccion
 ### 4.1 Verificar API
 
 Acceder a la documentación Swagger:
-- Desarrollo: `http://localhost:3001/api-docs`
+- Desarrollo: `http://localhost:3002/api-docs`
 - Producción: `https://notifications.bonaventurecclub.com/api-docs`
 
 ### 4.2 Verificar endpoints
 
 ```bash
 # Verificar endpoint principal
-curl http://localhost:3001/
+curl http://localhost:3002/
 
 # Verificar notificaciones (debe devolver array vacío inicialmente)
-curl http://localhost:3001/notificaciones
+curl http://localhost:3002/notificaciones
 
 # Verificar dashboard
-curl http://localhost:3001/notificaciones/dashboard
+curl http://localhost:3002/notificaciones/dashboard
 ```
 
 ### 4.3 Verificar plugin de WordPress
@@ -216,7 +216,7 @@ pm2 save
 Usar la interfaz de WordPress o hacer petición directa:
 
 ```bash
-curl -X POST http://localhost:3001/notificaciones \
+curl -X POST http://localhost:3002/notificaciones \
   -H "Content-Type: application/json" \
   -H "X-User-ID: 1" \
   -d '{
