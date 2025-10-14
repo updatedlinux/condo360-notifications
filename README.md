@@ -26,7 +26,6 @@ condo360-notifications/
 │   ├── timezone.js              # Utilidades de zona horaria
 │   └── validation.js            # Esquemas de validación
 ├── services/
-│   ├── pushNotificationService.js # Servicio de notificaciones push
 │   └── whatsappService.js        # Servicio de integración con WhatsApp
 ├── wordpress/
 │   ├── condo360-notifications-manager.php # Plugin de WordPress
@@ -186,14 +185,6 @@ X-User-ID: [ID del usuario de WordPress]
 
 ## Sistema de Notificaciones
 
-### Notificaciones Push
-
-- Envío automático cuando una notificación se activa
-- Procesamiento de notificaciones pendientes cada 5 minutos
-- Logging completo de envíos
-- Configuración por usuario (push/email)
-- Limpieza automática de logs antiguos
-
 ### Integración con WhatsApp
 
 - **Envío automático** cuando una notificación pasa a estar activa
@@ -246,9 +237,8 @@ VALUES (1, 1, 1);
 ### Cron Jobs
 
 1. **Cada hora**: Desactiva notificaciones expiradas
-2. **Cada 5 minutos**: Procesa notificaciones pendientes
-3. **Cada 2 minutos**: Verifica notificaciones activas y envía WhatsApp
-4. **Diariamente a las 2 AM**: Limpia logs antiguos (30 días)
+2. **Cada 2 minutos**: Verifica notificaciones activas y envía WhatsApp
+3. **Diariamente a las 2 AM**: Limpia logs de WhatsApp antiguos (30 días)
 
 ## Shortcode de WordPress
 

@@ -10,7 +10,6 @@ const moment = require('moment-timezone');
 const database = require('./config/database');
 const timezoneHelper = require('./utils/timezone');
 const { notificationSchemas, authSchemas, validateData } = require('./utils/validation');
-const pushNotificationService = require('./services/pushNotificationService');
 const WhatsAppService = require('./services/whatsappService');
 
 const app = express();
@@ -622,12 +621,6 @@ app.post('/notificaciones', requireAdmin, async (req, res) => {
             updated_at_local: timezoneHelper.formatForDisplay(newNotification.updated_at)
         };
 
-        // Enviar notificación push si está activa inmediatamente
-        if (estado && timezoneHelper.getCurrentUtc().isAfter(moment.utc(fechaNotificacionUtc))) {
-            pushNotificationService.sendNotificationToAllUsers(result.insertId)
-                .catch(error => console.error('Error al enviar notificación push:', error));
-        }
-
         // Enviar mensaje a WhatsApp si la notificación está activa inmediatamente
         const now = moment.utc();
         const fechaNotificacion = moment.utc(fechaNotificacionUtc);
@@ -1019,15 +1012,6 @@ cron.schedule('0 * * * *', async () => {
     }
 });
 
-// Tarea cron para procesar notificaciones pendientes cada 5 minutos
-cron.schedule('*/5 * * * *', async () => {
-    try {
-        await pushNotificationService.processPendingNotifications();
-    } catch (error) {
-        console.error('❌ Error al procesar notificaciones pendientes:', error);
-    }
-});
-
 // Tarea cron para verificar notificaciones que pasan a estar activas cada 2 minutos
 cron.schedule('*/2 * * * *', async () => {
     try {
@@ -1088,12 +1072,25 @@ cron.schedule('*/2 * * * *', async () => {
     }
 });
 
-// Tarea cron para limpiar logs antiguos diariamente a las 2 AM
+// Tarea cron para limpiar logs de WhatsApp antiguos diariamente a las 2 AM
 cron.schedule('0 2 * * *', async () => {
     try {
-        await pushNotificationService.cleanupOldLogs(30);
+        console.log('🧹 Limpiando logs de WhatsApp antiguos...');
+        
+        // Limpiar logs de WhatsApp más antiguos de 30 días
+        const result = await database.query(`
+            DELETE FROM wp_notification_whatsapp_log 
+            WHERE created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)
+        `);
+        
+        if (result.affectedRows > 0) {
+            console.log(`✅ ${result.affectedRows} logs de WhatsApp antiguos eliminados`);
+        } else {
+            console.log('ℹ️ No hay logs de WhatsApp antiguos para eliminar');
+        }
+        
     } catch (error) {
-        console.error('❌ Error al limpiar logs antiguos:', error);
+        console.error('❌ Error al limpiar logs de WhatsApp:', error);
     }
 });
 
