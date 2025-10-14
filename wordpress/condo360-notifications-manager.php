@@ -90,6 +90,18 @@ class Condo360NotificationsManager {
         </script>
         
         <div class="condo360-notifications-container">
+            <!-- Estado de conexión WhatsApp -->
+            <div class="condo360-whatsapp-status">
+                <div class="whatsapp-status-container">
+                    <h3>Conexión con WhatsApp</h3>
+                    <div id="whatsapp-status-content">
+                        <div class="status-loading">
+                            <i class="icon-loading"></i> Verificando conexión...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="condo360-notifications-header">
                 <div class="condo360-notifications-actions">
                     <button type="button" class="btn btn-primary" data-action="create">

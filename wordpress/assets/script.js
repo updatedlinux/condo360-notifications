@@ -17,6 +17,7 @@
             this.bindEvents();
             this.loadDashboardNotifications();
             this.loadNotifications();
+            this.checkWhatsAppStatus();
         }
 
         bindEvents() {
@@ -841,6 +842,83 @@
                 console.error('Error formateando fecha:', error);
                 return 'Fecha inválida';
             }
+        }
+
+        // Verificar estado de conexión WhatsApp
+        checkWhatsAppStatus() {
+            console.log('📱 Verificando estado de WhatsApp...');
+            
+            $.ajax({
+                url: 'https://wschat.bonaventurecclub.com/api/status',
+                method: 'GET',
+                timeout: 10000,
+                success: (response) => {
+                    console.log('📱 Respuesta del API WhatsApp:', response);
+                    this.updateWhatsAppStatus(response);
+                },
+                error: (xhr, status, error) => {
+                    console.error('📱 Error al verificar estado de WhatsApp:', error);
+                    console.error('📱 Status:', status);
+                    console.error('📱 XHR:', xhr);
+                    
+                    if (xhr.status === 502 || xhr.status === 503 || xhr.status === 504) {
+                        this.showWhatsAppError('Conexión con WhatsApp Caída', 'contacte al Administrador del Sistema');
+                    } else {
+                        this.showWhatsAppError('Error de Conexión', 'No se pudo verificar el estado de WhatsApp');
+                    }
+                }
+            });
+        }
+
+        // Actualizar estado de WhatsApp
+        updateWhatsAppStatus(response) {
+            const statusContent = $('#whatsapp-status-content');
+            
+            if (response.success && response.data) {
+                const { connected, clientInfo } = response.data;
+                
+                if (connected && clientInfo) {
+                    // WhatsApp conectado
+                    const phoneNumber = clientInfo.phone || 'N/A';
+                    const userName = clientInfo.name || 'Usuario';
+                    
+                    statusContent.html(`
+                        <div class="status-connected">
+                            WhatsApp Conectado
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
+                            Usuario: ${userName} | Teléfono: ${phoneNumber}
+                        </div>
+                    `);
+                } else {
+                    // WhatsApp desconectado
+                    statusContent.html(`
+                        <div class="status-disconnected">
+                            WhatsApp Desconectado
+                        </div>
+                        <a href="https://bonaventurecclub.com/wscondo360/" 
+                           target="_blank" 
+                           class="whatsapp-reconnect-btn">
+                            Reconectar WhatsApp
+                        </a>
+                    `);
+                }
+            } else {
+                this.showWhatsAppError('Error de Respuesta', 'El API no devolvió datos válidos');
+            }
+        }
+
+        // Mostrar error de WhatsApp
+        showWhatsAppError(title, message) {
+            const statusContent = $('#whatsapp-status-content');
+            statusContent.html(`
+                <div class="status-error">
+                    ${title}
+                </div>
+                <div style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
+                    ${message}
+                </div>
+            `);
         }
     }
 

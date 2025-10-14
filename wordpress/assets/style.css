@@ -7,6 +7,118 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Estado de conexión WhatsApp */
+.condo360-whatsapp-status {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2);
+}
+
+.whatsapp-status-container h3 {
+    color: white;
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.whatsapp-status-container h3::before {
+    content: "📱";
+    font-size: 20px;
+}
+
+#whatsapp-status-content {
+    color: white;
+    font-size: 14px;
+}
+
+.status-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-loading .icon-loading {
+    animation: spin 1s linear infinite;
+}
+
+.status-connected {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4ade80;
+    font-weight: 500;
+}
+
+.status-connected::before {
+    content: "✅";
+    font-size: 16px;
+}
+
+.status-disconnected {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fbbf24;
+    font-weight: 500;
+}
+
+.status-disconnected::before {
+    content: "⚠️";
+    font-size: 16px;
+}
+
+.status-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.status-error::before {
+    content: "❌";
+    font-size: 16px;
+}
+
+.whatsapp-reconnect-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.whatsapp-reconnect-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.whatsapp-reconnect-btn::before {
+    content: "🔗";
+    font-size: 14px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .condo360-notifications-header {
     display: flex;
     justify-content: space-between;
