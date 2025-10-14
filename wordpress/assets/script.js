@@ -10,6 +10,8 @@
             this.currentPage = 1;
             this.currentLimit = 10;
             this.currentNotification = null;
+            this.searchTimeout = null;
+            this.whatsappStatusInterval = null;
             this.init();
         }
 
@@ -18,6 +20,7 @@
             this.loadDashboardNotifications();
             this.loadNotifications();
             this.checkWhatsAppStatus();
+            this.startWhatsAppStatusRefresh();
         }
 
         bindEvents() {
@@ -915,7 +918,7 @@
                         <div class="status-connected">
                             WhatsApp Conectado
                         </div>
-                        <div style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
+                        <div class="whatsapp-user-info">
                             Usuario: ${userName} | Teléfono: ${phoneNumber}
                         </div>
                     `);
@@ -930,6 +933,9 @@
                            class="whatsapp-reconnect-btn">
                             Reconectar WhatsApp
                         </a>
+                        <div class="whatsapp-disconnect-notice">
+                            <strong>Nota:</strong> Puedes enviar la notificación igualmente, la misma se enviará y llegará al WhatsApp del grupo configurado cuando restablezcas la conexión mediante el uso del código QR.
+                        </div>
                     `);
                 }
             } else {
@@ -948,6 +954,31 @@
                     ${message}
                 </div>
             `);
+        }
+
+        // Iniciar auto-refresh del estado de WhatsApp
+        startWhatsAppStatusRefresh() {
+            console.log('📱 Iniciando auto-refresh del estado de WhatsApp cada 10 segundos');
+            
+            // Limpiar intervalo anterior si existe
+            if (this.whatsappStatusInterval) {
+                clearInterval(this.whatsappStatusInterval);
+            }
+            
+            // Establecer nuevo intervalo
+            this.whatsappStatusInterval = setInterval(() => {
+                console.log('📱 Auto-refresh: Verificando estado de WhatsApp...');
+                this.checkWhatsAppStatus();
+            }, 10000); // 10 segundos
+        }
+
+        // Detener auto-refresh del estado de WhatsApp
+        stopWhatsAppStatusRefresh() {
+            if (this.whatsappStatusInterval) {
+                console.log('📱 Deteniendo auto-refresh del estado de WhatsApp');
+                clearInterval(this.whatsappStatusInterval);
+                this.whatsappStatusInterval = null;
+            }
         }
     }
 
