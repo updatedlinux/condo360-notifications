@@ -9,6 +9,7 @@ API RESTful desarrollada en Node.js para gestionar notificaciones push que se vi
 - ✅ API RESTful completa con endpoints CRUD
 - ✅ Manejo correcto de zonas horarias (UTC para almacenamiento, GMT-4 para visualización)
 - ✅ Sistema de notificaciones push automáticas
+- ✅ **Integración con WhatsApp** - Envío automático de mensajes cuando notificaciones se activan
 - ✅ Validación de administradores de WordPress (sin JWT)
 - ✅ Documentación Swagger completa
 - ✅ Shortcode de WordPress para gestión
@@ -25,7 +26,8 @@ condo360-notifications/
 │   ├── timezone.js              # Utilidades de zona horaria
 │   └── validation.js            # Esquemas de validación
 ├── services/
-│   └── pushNotificationService.js # Servicio de notificaciones push
+│   ├── pushNotificationService.js # Servicio de notificaciones push
+│   └── whatsappService.js        # Servicio de integración con WhatsApp
 ├── wordpress/
 │   ├── condo360-notifications-manager.php # Plugin de WordPress
 │   └── assets/
@@ -127,6 +129,7 @@ La documentación Swagger estará disponible en:
 | PUT | `/notificaciones/:id` | Actualizar notificación | Admin |
 | DELETE | `/notificaciones/:id` | Eliminar notificación | Admin |
 | GET | `/notificaciones/estado/:id` | Estado actual de notificación | No |
+| POST | `/test-whatsapp` | Probar envío a WhatsApp | No |
 
 ### Parámetros de consulta
 
@@ -181,15 +184,53 @@ X-User-ID: [ID del usuario de WordPress]
 }
 ```
 
-## Sistema de Notificaciones Push
+## Sistema de Notificaciones
 
-### Características
+### Notificaciones Push
 
 - Envío automático cuando una notificación se activa
 - Procesamiento de notificaciones pendientes cada 5 minutos
 - Logging completo de envíos
 - Configuración por usuario (push/email)
 - Limpieza automática de logs antiguos
+
+### Integración con WhatsApp
+
+- **Envío automático** cuando una notificación pasa a estar activa
+- **Formato de mensaje**: `"Título - Descripción"`
+- **API externa**: `https://wschat.bonaventurecclub.com/api/send-message`
+- **Verificación cada 2 minutos** para detectar notificaciones activas
+- **Log de envíos** para evitar duplicados
+- **Endpoint de prueba**: `POST /test-whatsapp`
+
+#### Ejemplo de uso del endpoint de prueba:
+
+```bash
+curl -X POST "http://localhost:3002/test-whatsapp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Mantenimiento programado",
+    "descripcion": "Se realizará mantenimiento del sistema el próximo viernes"
+  }'
+```
+
+#### Respuesta esperada:
+
+```json
+{
+  "success": true,
+  "message": "Prueba de WhatsApp completada",
+  "data": {
+    "success": true,
+    "data": {
+      "success": true,
+      "messageId": "true_120363421771836255@g.us_3EB0734459243F96054B16_51089273557056@lid",
+      "groupId": "120363421771836255@g.us"
+    },
+    "message": "Mensaje enviado a WhatsApp exitosamente"
+  }
+}
+```
 
 ### Configuración de usuario
 
@@ -206,7 +247,8 @@ VALUES (1, 1, 1);
 
 1. **Cada hora**: Desactiva notificaciones expiradas
 2. **Cada 5 minutos**: Procesa notificaciones pendientes
-3. **Diariamente a las 2 AM**: Limpia logs antiguos (30 días)
+3. **Cada 2 minutos**: Verifica notificaciones activas y envía WhatsApp
+4. **Diariamente a las 2 AM**: Limpia logs antiguos (30 días)
 
 ## Shortcode de WordPress
 

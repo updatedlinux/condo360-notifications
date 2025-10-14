@@ -43,3 +43,17 @@ CREATE TABLE IF NOT EXISTS `wp_notificaciones_user_settings` (
   UNIQUE KEY `unique_user_id` (`user_id`),
   FOREIGN KEY (`user_id`) REFERENCES `wp_users`(`ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla para log de mensajes enviados a WhatsApp
+CREATE TABLE IF NOT EXISTS `wp_notification_whatsapp_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `notification_id` int(11) NOT NULL,
+  `message` text NOT NULL COMMENT 'Mensaje enviado a WhatsApp',
+  `sent_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_notification_id` (`notification_id`),
+  KEY `idx_sent_at` (`sent_at`),
+  KEY `idx_created_at` (`created_at`),
+  FOREIGN KEY (`notification_id`) REFERENCES `wp_notificaciones`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

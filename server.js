@@ -11,9 +11,13 @@ const database = require('./config/database');
 const timezoneHelper = require('./utils/timezone');
 const { notificationSchemas, authSchemas, validateData } = require('./utils/validation');
 const pushNotificationService = require('./services/pushNotificationService');
+const WhatsAppService = require('./services/whatsappService');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
+
+// Inicializar servicios
+const whatsappService = new WhatsAppService();
 
 // Configurar Express para confiar en proxy (para rate limiting)
 app.set('trust proxy', 1);
@@ -624,6 +628,35 @@ app.post('/notificaciones', requireAdmin, async (req, res) => {
                 .catch(error => console.error('Error al enviar notificación push:', error));
         }
 
+        // Enviar mensaje a WhatsApp si la notificación está activa inmediatamente
+        const now = moment.utc();
+        const fechaNotificacion = moment.utc(fechaNotificacionUtc);
+        const fechaFin = moment.utc(fechaFinUtc);
+        
+        if (estado && now.isAfter(fechaNotificacion) && now.isBefore(fechaFin)) {
+            console.log('📱 Notificación activa inmediatamente, enviando a WhatsApp...');
+            
+            const notificationForWhatsApp = {
+                id: result.insertId,
+                titulo: titulo,
+                descripcion: descripcion,
+                estado: estado ? 1 : 0,
+                estado_actual: 1
+            };
+            
+            whatsappService.processNotification(notificationForWhatsApp)
+                .then(result => {
+                    if (result.success) {
+                        console.log('✅ Mensaje enviado a WhatsApp exitosamente');
+                    } else {
+                        console.error('❌ Error al enviar mensaje a WhatsApp:', result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error al procesar notificación para WhatsApp:', error);
+                });
+        }
+
         res.status(201).json({
             success: true,
             message: 'Notificación creada exitosamente',
@@ -995,6 +1028,66 @@ cron.schedule('*/5 * * * *', async () => {
     }
 });
 
+// Tarea cron para verificar notificaciones que pasan a estar activas cada 2 minutos
+cron.schedule('*/2 * * * *', async () => {
+    try {
+        console.log('📱 Verificando notificaciones que pasan a estar activas...');
+        
+        // Obtener notificaciones que están activas ahora pero no fueron procesadas
+        const notifications = await database.query(`
+            SELECT 
+                id,
+                titulo,
+                descripcion,
+                fecha_notificacion,
+                fecha_fin,
+                estado,
+                created_at,
+                updated_at,
+                CASE 
+                    WHEN NOW() >= fecha_notificacion AND NOW() <= fecha_fin THEN 1
+                    ELSE 0
+                END as estado_actual
+            FROM wp_notificaciones 
+            WHERE estado = 1 
+            AND NOW() >= fecha_notificacion 
+            AND NOW() <= fecha_fin
+            AND id NOT IN (
+                SELECT notification_id 
+                FROM wp_notification_whatsapp_log 
+                WHERE DATE(created_at) = CURDATE()
+            )
+        `);
+        
+        console.log(`📱 Encontradas ${notifications.length} notificaciones activas para procesar`);
+        
+        for (const notification of notifications) {
+            try {
+                console.log(`📱 Procesando notificación ID ${notification.id}: ${notification.titulo}`);
+                
+                const result = await whatsappService.processNotification(notification);
+                
+                if (result.success && result.sent) {
+                    // Registrar en log que se envió
+                    await database.query(`
+                        INSERT INTO wp_notification_whatsapp_log (notification_id, message, sent_at, created_at)
+                        VALUES (?, ?, NOW(), NOW())
+                    `, [notification.id, `${notification.titulo} - ${notification.descripcion}`]);
+                    
+                    console.log(`✅ WhatsApp enviado para notificación ID ${notification.id}`);
+                } else {
+                    console.log(`ℹ️ WhatsApp no enviado para notificación ID ${notification.id}: ${result.message}`);
+                }
+            } catch (error) {
+                console.error(`❌ Error al procesar notificación ID ${notification.id}:`, error);
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Error en verificación de notificaciones activas:', error);
+    }
+});
+
 // Tarea cron para limpiar logs antiguos diariamente a las 2 AM
 cron.schedule('0 2 * * *', async () => {
     try {
@@ -1024,6 +1117,48 @@ app.use((error, req, res, next) => {
 });
 
 // Inicializar servidor
+});
+
+// Endpoint de prueba para WhatsApp
+app.post('/test-whatsapp', async (req, res) => {
+    try {
+        const { titulo, descripcion } = req.body;
+        
+        if (!titulo || !descripcion) {
+            return res.status(400).json({
+                success: false,
+                error: 'Se requieren titulo y descripcion'
+            });
+        }
+        
+        const testNotification = {
+            id: 'test',
+            titulo: titulo,
+            descripcion: descripcion,
+            estado: 1,
+            estado_actual: 1
+        };
+        
+        console.log('🧪 Probando envío a WhatsApp:', testNotification);
+        
+        const result = await whatsappService.processNotification(testNotification);
+        
+        res.json({
+            success: true,
+            message: 'Prueba de WhatsApp completada',
+            data: result
+        });
+        
+    } catch (error) {
+        console.error('❌ Error en prueba de WhatsApp:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error interno del servidor',
+            message: error.message
+        });
+    }
+});
+
 const startServer = async () => {
     try {
         // Conectar a la base de datos
