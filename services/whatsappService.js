@@ -31,7 +31,8 @@ class WhatsAppService {
             return {
                 success: true,
                 data: response.data,
-                message: 'Mensaje enviado a WhatsApp exitosamente'
+                message: 'Mensaje enviado a WhatsApp exitosamente',
+                sent: true
             };
 
         } catch (error) {
@@ -42,21 +43,24 @@ class WhatsAppService {
                 return {
                     success: false,
                     error: error.response.data,
-                    message: 'Error del servidor WhatsApp'
+                    message: 'Error del servidor WhatsApp',
+                    sent: false
                 };
             } else if (error.request) {
                 console.error('📱 Sin respuesta del servidor WhatsApp');
                 return {
                     success: false,
                     error: 'Sin respuesta del servidor',
-                    message: 'No se pudo conectar con el servidor WhatsApp'
+                    message: 'No se pudo conectar con el servidor WhatsApp',
+                    sent: false
                 };
             } else {
                 console.error('📱 Error de configuración:', error.message);
                 return {
                     success: false,
                     error: error.message,
-                    message: 'Error de configuración al enviar mensaje'
+                    message: 'Error de configuración al enviar mensaje',
+                    sent: false
                 };
             }
         }

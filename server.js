@@ -638,9 +638,20 @@ app.post('/notificaciones', requireAdmin, async (req, res) => {
             };
             
             whatsappService.processNotification(notificationForWhatsApp)
-                .then(result => {
-                    if (result.success) {
+                .then(async result => {
+                    if (result.success && result.sent) {
                         console.log('✅ Mensaje enviado a WhatsApp exitosamente');
+                        
+                        // Registrar inmediatamente en el log para evitar duplicados
+                        try {
+                            await database.query(`
+                                INSERT INTO wp_notification_whatsapp_log (notification_id, message, sent_at, created_at)
+                                VALUES (?, ?, NOW(), NOW())
+                            `, [notificationForWhatsApp.id, `${titulo} - ${descripcion}`]);
+                            console.log('✅ Registro de WhatsApp guardado en log');
+                        } catch (logError) {
+                            console.error('❌ Error al guardar log de WhatsApp:', logError);
+                        }
                     } else {
                         console.error('❌ Error al enviar mensaje a WhatsApp:', result.message);
                     }
@@ -1020,30 +1031,40 @@ cron.schedule('*/2 * * * *', async () => {
         // Obtener notificaciones que están activas ahora pero no fueron procesadas
         const notifications = await database.query(`
             SELECT 
-                id,
-                titulo,
-                descripcion,
-                fecha_notificacion,
-                fecha_fin,
-                estado,
-                created_at,
-                updated_at,
+                n.id,
+                n.titulo,
+                n.descripcion,
+                n.fecha_notificacion,
+                n.fecha_fin,
+                n.estado,
+                n.created_at,
+                n.updated_at,
                 CASE 
-                    WHEN NOW() >= fecha_notificacion AND NOW() <= fecha_fin THEN 1
+                    WHEN NOW() >= n.fecha_notificacion AND NOW() <= n.fecha_fin THEN 1
                     ELSE 0
                 END as estado_actual
-            FROM wp_notificaciones 
-            WHERE estado = 1 
-            AND NOW() >= fecha_notificacion 
-            AND NOW() <= fecha_fin
-            AND id NOT IN (
-                SELECT notification_id 
-                FROM wp_notification_whatsapp_log 
-                WHERE DATE(created_at) = CURDATE()
+            FROM wp_notificaciones n
+            WHERE n.estado = 1 
+            AND NOW() >= n.fecha_notificacion 
+            AND NOW() <= n.fecha_fin
+            AND n.id NOT IN (
+                SELECT COALESCE(w.notification_id, 0)
+                FROM wp_notification_whatsapp_log w
+                WHERE w.notification_id IS NOT NULL
             )
         `);
         
         console.log(`📱 Encontradas ${notifications.length} notificaciones activas para procesar`);
+        
+        // Debug: mostrar qué notificaciones se encontraron
+        if (notifications.length > 0) {
+            console.log('📱 Notificaciones encontradas:', notifications.map(n => ({
+                id: n.id,
+                titulo: n.titulo,
+                estado: n.estado,
+                estado_actual: n.estado_actual
+            })));
+        }
         
         for (const notification of notifications) {
             try {
@@ -1053,6 +1074,7 @@ cron.schedule('*/2 * * * *', async () => {
                 
                 if (result.success && result.sent) {
                     // Registrar en log que se envió
+                    console.log(`📝 Registrando envío en log para notificación ID ${notification.id}`);
                     await database.query(`
                         INSERT INTO wp_notification_whatsapp_log (notification_id, message, sent_at, created_at)
                         VALUES (?, ?, NOW(), NOW())
