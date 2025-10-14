@@ -1116,9 +1116,6 @@ app.use((error, req, res, next) => {
     });
 });
 
-// Inicializar servidor
-});
-
 // Endpoint de prueba para WhatsApp
 app.post('/test-whatsapp', async (req, res) => {
     try {
