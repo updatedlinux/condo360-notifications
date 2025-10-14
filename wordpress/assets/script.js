@@ -57,7 +57,11 @@
             });
 
             // Formulario
-            $(document).on('submit', '#condo360-notification-form', (e) => this.handleFormSubmit(e));
+            console.log('🔍 Registrando event handler para formulario...');
+            $(document).on('submit', '#condo360-notification-form', (e) => {
+                console.log('🔍 Event handler del formulario ejecutado!');
+                this.handleFormSubmit(e);
+            });
             
             // Filtros
             $(document).on('input', '#search-notifications', () => this.debounceSearch());
@@ -361,33 +365,56 @@
 
         // Manejar envío del formulario
         handleFormSubmit(e) {
+            console.log('🔍 === INICIO handleFormSubmit ===');
+            console.log('🔍 Event:', e);
             e.preventDefault();
             
+            console.log('🔍 Validando formulario...');
             if (!this.validateForm()) {
+                console.log('❌ Validación falló');
                 return;
             }
+            console.log('✅ Validación exitosa');
 
+            console.log('🔍 Obteniendo datos del formulario...');
             const formData = this.getFormData();
+            console.log('🔍 Datos del formulario:', formData);
+            
             const action = this.currentNotification ? 'update_notification' : 'create_notification';
+            console.log('🔍 Acción:', action);
+            console.log('🔍 Current notification ID:', this.currentNotification);
             
             if (this.currentNotification) {
                 formData.id = this.currentNotification;
+                console.log('🔍 Agregando ID al formData:', formData);
             }
 
+            console.log('🔍 Enviando formulario...');
             this.submitForm(action, formData);
+            console.log('🔍 === FIN handleFormSubmit ===');
         }
 
         // Enviar formulario
         submitForm(action, data) {
+            console.log('🔍 === INICIO submitForm ===');
+            console.log('🔍 Action:', action);
+            console.log('🔍 Data:', data);
+            
             const submitBtn = $('#condo360-notification-form button[type="submit"]');
             const btnText = submitBtn.find('.btn-text');
             const btnLoading = submitBtn.find('.btn-loading');
             
+            console.log('🔍 Submit button encontrado:', submitBtn.length);
+            console.log('🔍 Button text encontrado:', btnText.length);
+            console.log('🔍 Button loading encontrado:', btnLoading.length);
+            
             btnText.hide();
             btnLoading.show();
             submitBtn.prop('disabled', true);
-
+            
+            console.log('🔍 Haciendo request...');
             this.makeRequest(action, data, (response) => {
+                console.log('✅ Respuesta exitosa:', response);
                 this.showToast('Notificación guardada exitosamente', 'success');
                 this.hideModal();
                 this.refreshAll();
@@ -399,11 +426,13 @@
                 
                 // Las notificaciones push se manejan automáticamente por el sistema
                 // No es necesario enviarlas desde el admin
-            }, () => {
+            }, (error) => {
+                console.error('❌ Error en submitForm:', error);
                 btnText.show();
                 btnLoading.hide();
                 submitBtn.prop('disabled', false);
             });
+            console.log('🔍 === FIN submitForm ===');
         }
 
         // Confirmar acción
