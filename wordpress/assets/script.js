@@ -391,6 +391,11 @@
                 this.hideModal();
                 this.refreshAll();
                 
+                // Restaurar estado del botón
+                btnText.show();
+                btnLoading.hide();
+                submitBtn.prop('disabled', false);
+                
                 // Las notificaciones push se manejan automáticamente por el sistema
                 // No es necesario enviarlas desde el admin
             }, () => {
@@ -440,6 +445,7 @@
             $('#condo360-confirm-modal').hide();
             this.currentNotification = null;
             this.clearErrors();
+            this.resetForm();
         }
 
         // Resetear formulario
@@ -447,6 +453,15 @@
             $('#condo360-notification-form')[0].reset();
             $('#condo360-notification-id').val('');
             this.clearErrors();
+            
+            // Restaurar estado del botón de envío
+            const submitBtn = $('#condo360-notification-form button[type="submit"]');
+            const btnText = submitBtn.find('.btn-text');
+            const btnLoading = submitBtn.find('.btn-loading');
+            
+            btnText.show();
+            btnLoading.hide();
+            submitBtn.prop('disabled', false);
             
             // Establecer fechas por defecto
             const now = new Date();
@@ -670,9 +685,17 @@
                 const status = $item.find('.notification-status').text().toLowerCase();
                 
                 const matchesSearch = !searchTerm || title.includes(searchTerm) || description.includes(searchTerm);
-                const matchesStatus = !statusFilter || 
-                    (statusFilter === 'active' && status.includes('activa')) ||
-                    (statusFilter === 'inactive' && status.includes('inactiva'));
+                
+                let matchesStatus = true;
+                if (statusFilter) {
+                    if (statusFilter === 'active') {
+                        // Activa incluye: "activa", "programada" (estado=1)
+                        matchesStatus = status.includes('activa') || status.includes('programada');
+                    } else if (statusFilter === 'inactive') {
+                        // Inactiva incluye: "inactiva", "expirada" (estado=0)
+                        matchesStatus = status.includes('inactiva') || status.includes('expirada');
+                    }
+                }
                 
                 if (matchesSearch && matchesStatus) {
                     $item.show();
