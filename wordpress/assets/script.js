@@ -880,67 +880,161 @@
         checkWhatsAppStatus() {
             console.log('📱 Verificando estado de WhatsApp...');
             
-            $.ajax({
+            // Consultar ambos endpoints en paralelo
+            const statusRequest = $.ajax({
                 url: 'https://wschat.bonaventurecclub.com/api/status',
                 method: 'GET',
-                timeout: 10000,
-                success: (response) => {
-                    console.log('📱 Respuesta del API WhatsApp:', response);
-                    this.updateWhatsAppStatus(response);
-                },
-                error: (xhr, status, error) => {
-                    console.error('📱 Error al verificar estado de WhatsApp:', error);
-                    console.error('📱 Status:', status);
-                    console.error('📱 XHR:', xhr);
-                    
-                    if (xhr.status === 502 || xhr.status === 503 || xhr.status === 504) {
-                        this.showWhatsAppError('Conexión con WhatsApp Caída', 'contacte al Administrador del Sistema');
-                    } else {
-                        this.showWhatsAppError('Error de Conexión', 'No se pudo verificar el estado de WhatsApp');
-                    }
-                }
+                timeout: 10000
             });
+            
+            const groupRequest = $.ajax({
+                url: 'https://wschat.bonaventurecclub.com/api/configured-group',
+                method: 'GET',
+                timeout: 10000
+            });
+            
+            // Manejar ambas respuestas
+            $.when(statusRequest, groupRequest)
+                .done((statusResponse, groupResponse) => {
+                    console.log('📱 Respuesta del API Status:', statusResponse);
+                    console.log('📱 Respuesta del API Grupo:', groupResponse);
+                    
+                    this.updateWhatsAppStatus(statusResponse, groupResponse);
+                })
+                .fail((statusXHR, statusTextStatus, statusError, groupXHR, groupTextStatus, groupError) => {
+                    console.error('📱 Error al verificar estado de WhatsApp');
+                    console.error('📱 Status Error:', statusXHR, statusTextStatus, statusError);
+                    console.error('📱 Group Error:', groupXHR, groupTextStatus, groupError);
+                    
+                    // Si el status falló con error de servidor
+                    if (statusXHR && (statusXHR.status === 502 || statusXHR.status === 503 || statusXHR.status === 504)) {
+                        this.showWhatsAppError('Conexión con WhatsApp Caída', 'contacte al Administrador del Sistema');
+                        return;
+                    }
+                    
+                    // Intentar obtener las respuestas parciales
+                    statusRequest
+                        .done((statusResponse) => {
+                            // Status OK, verificar grupo
+                            groupRequest
+                                .done((groupResponse) => {
+                                    this.updateWhatsAppStatus(statusResponse, groupResponse);
+                                })
+                                .fail(() => {
+                                    // Status OK pero grupo falló o no configurado
+                                    console.warn('📱 Grupo no configurado o error al consultar grupo');
+                                    this.showWhatsAppDisconnected();
+                                });
+                        })
+                        .fail(() => {
+                            // Status falló, verificar grupo
+                            groupRequest
+                                .done((groupResponse) => {
+                                    // Status falló pero grupo OK, mostrar error
+                                    this.showWhatsAppError('Error de Conexión', 'No se pudo verificar el estado de WhatsApp');
+                                })
+                                .fail(() => {
+                                    // Ambos fallaron
+                                    this.showWhatsAppError('Error de Conexión', 'No se pudo verificar el estado de WhatsApp');
+                                });
+                        });
+                });
+        }
+
+        // Validar que el grupo esté configurado correctamente
+        isGroupConfigured(groupResponse) {
+            if (!groupResponse || !groupResponse.success || !groupResponse.data) {
+                console.warn('📱 Respuesta de grupo inválida:', groupResponse);
+                return false;
+            }
+            
+            const { groupId, groupName, configuredAt } = groupResponse.data;
+            
+            // Validar que ninguno sea null o undefined
+            if (groupId === null || groupId === undefined || 
+                groupName === null || groupName === undefined || 
+                configuredAt === null || configuredAt === undefined) {
+                console.warn('📱 Grupo no configurado correctamente:', {
+                    groupId,
+                    groupName,
+                    configuredAt
+                });
+                return false;
+            }
+            
+            // Validar que no sean strings vacíos
+            if (groupId === '' || groupName === '') {
+                console.warn('📱 Grupo tiene campos vacíos:', {
+                    groupId,
+                    groupName
+                });
+                return false;
+            }
+            
+            return true;
         }
 
         // Actualizar estado de WhatsApp
-        updateWhatsAppStatus(response) {
+        updateWhatsAppStatus(statusResponse, groupResponse) {
             const statusContent = $('#whatsapp-status-content');
             
-            if (response.success && response.data) {
-                const { connected, clientInfo } = response.data;
-                
-                if (connected && clientInfo) {
-                    // WhatsApp conectado
-                    const phoneNumber = clientInfo.phone || 'N/A';
-                    const userName = clientInfo.name || 'Usuario';
-                    
-                    statusContent.html(`
-                        <div class="status-connected">
-                            WhatsApp Conectado
-                        </div>
-                        <div class="whatsapp-user-info">
-                            Usuario: ${userName} | Teléfono: ${phoneNumber}
-                        </div>
-                    `);
-                } else {
-                    // WhatsApp desconectado
-                    statusContent.html(`
-                        <div class="status-disconnected">
-                            WhatsApp Desconectado
-                        </div>
-                        <a href="https://bonaventurecclub.com/wscondo360/" 
-                           target="_blank" 
-                           class="whatsapp-reconnect-btn">
-                            Reconectar WhatsApp
-                        </a>
-                        <div class="whatsapp-disconnect-notice">
-                            <strong>Nota:</strong> Puedes enviar la notificación igualmente, la misma se enviará y llegará al WhatsApp del grupo configurado cuando restablezcas la conexión mediante el uso del código QR.
-                        </div>
-                    `);
-                }
-            } else {
+            // Validar respuesta del status
+            if (!statusResponse || !statusResponse.success || !statusResponse.data) {
+                console.error('📱 Respuesta de status inválida:', statusResponse);
                 this.showWhatsAppError('Error de Respuesta', 'El API no devolvió datos válidos');
+                return;
             }
+            
+            // Validar que el grupo esté configurado
+            const groupConfigured = this.isGroupConfigured(groupResponse);
+            
+            if (!groupConfigured) {
+                console.warn('📱 Grupo no configurado, mostrando como desconectado');
+                this.showWhatsAppDisconnected();
+                return;
+            }
+            
+            const { connected, clientInfo } = statusResponse.data;
+            
+            if (connected && clientInfo) {
+                // WhatsApp conectado y grupo configurado
+                const phoneNumber = clientInfo.phone || 'N/A';
+                const userName = clientInfo.name || 'Usuario';
+                const groupName = groupResponse.data.groupName || 'Grupo';
+                
+                statusContent.html(`
+                    <div class="status-connected">
+                        WhatsApp Conectado
+                    </div>
+                    <div class="whatsapp-user-info">
+                        Usuario: ${userName} | Teléfono: ${phoneNumber}
+                    </div>
+                    <div class="whatsapp-user-info" style="margin-top: 6px;">
+                        Grupo: ${groupName}
+                    </div>
+                `);
+            } else {
+                // WhatsApp desconectado
+                this.showWhatsAppDisconnected();
+            }
+        }
+
+        // Mostrar estado desconectado de WhatsApp
+        showWhatsAppDisconnected() {
+            const statusContent = $('#whatsapp-status-content');
+            statusContent.html(`
+                <div class="status-disconnected">
+                    WhatsApp Desconectado
+                </div>
+                <a href="https://bonaventurecclub.com/wscondo360/" 
+                   target="_blank" 
+                   class="whatsapp-reconnect-btn">
+                    Reconectar WhatsApp
+                </a>
+                <div class="whatsapp-disconnect-notice">
+                    <strong>Nota:</strong> Puedes enviar la notificación igualmente, la misma se enviará y llegará al WhatsApp del grupo configurado cuando restablezcas la conexión mediante el uso del código QR.
+                </div>
+            `);
         }
 
         // Mostrar error de WhatsApp
