@@ -202,6 +202,13 @@
             return statusText === 'Activa';
         }
 
+        // Verificar si una notificación se puede editar
+        // Solo se puede editar si está en estado "Programada"
+        canEditNotification(notification) {
+            const statusText = this.getStatusText(notification);
+            return statusText === 'Programada';
+        }
+
         renderNotificationsList(notifications) {
             const container = $('#condo360-notifications-list');
             
@@ -211,12 +218,12 @@
             }
 
             const html = notifications.map(notification => {
-                const isActive = this.isNotificationActive(notification);
-                const editButton = isActive ? '' : `
+                const canEdit = this.canEditNotification(notification);
+                const editButton = canEdit ? `
                     <button class="btn btn-sm btn-primary" data-action="edit" data-id="${notification.id}">
                         <i class="icon-edit"></i> Editar
                     </button>
-                `;
+                ` : '';
                 
                 return `
                 <div class="notification-item">
