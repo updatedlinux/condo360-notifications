@@ -583,9 +583,13 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     background: white;
+    color: #2c3e50;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 40px;
 }
 
 .pagination button:hover {
@@ -601,6 +605,12 @@
 .pagination button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    color: #95a5a6;
+}
+
+.pagination button span {
+    color: #2c3e50;
+    padding: 0 5px;
 }
 
 /* Toast */
@@ -787,6 +797,12 @@
     font-weight: bold;
     cursor: pointer;
     transition: color 0.2s ease;
+    line-height: 1;
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .condo360-close:hover {
@@ -817,13 +833,8 @@
 .condo360-modal-header h3 {
     padding-right: 40px;
     word-wrap: break-word;
-}
-
-.condo360-close {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    flex: 1;
+    min-width: 0;
 }
 
 /* Estilos específicos para detalles de notificación */

@@ -196,6 +196,12 @@
         }
 
         // Renderizar lista de notificaciones
+        // Verificar si una notificación está activa
+        isNotificationActive(notification) {
+            const statusText = this.getStatusText(notification);
+            return statusText === 'Activa';
+        }
+
         renderNotificationsList(notifications) {
             const container = $('#condo360-notifications-list');
             
@@ -204,7 +210,15 @@
                 return;
             }
 
-            const html = notifications.map(notification => `
+            const html = notifications.map(notification => {
+                const isActive = this.isNotificationActive(notification);
+                const editButton = isActive ? '' : `
+                    <button class="btn btn-sm btn-primary" data-action="edit" data-id="${notification.id}">
+                        <i class="icon-edit"></i> Editar
+                    </button>
+                `;
+                
+                return `
                 <div class="notification-item">
                     <div class="notification-item-header">
                         <h4 class="notification-item-title">${this.escapeHtml(notification.titulo)}</h4>
@@ -212,9 +226,7 @@
                             <button class="btn btn-sm btn-warning" data-action="view" data-id="${notification.id}">
                                 <i class="icon-view"></i> Ver
                             </button>
-                            <button class="btn btn-sm btn-primary" data-action="edit" data-id="${notification.id}">
-                                <i class="icon-edit"></i> Editar
-                            </button>
+                            ${editButton}
                             <button class="btn btn-sm btn-danger" data-action="delete" data-id="${notification.id}">
                                 <i class="icon-delete"></i> Eliminar
                             </button>
@@ -238,7 +250,8 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             container.html(html);
         }
@@ -340,30 +353,16 @@
 
         // Eliminar notificación
         deleteNotification(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const id = $(e.currentTarget).data('id');
             console.log('🔍 Eliminar notificación ID:', id);
-            console.log('🔍 === INICIO deleteNotification ===');
-            console.log('🔍 ID extraído:', id);
-            console.log('🔍 Tipo de ID:', typeof id);
             
             this.currentNotification = id;
-            console.log('🔍 this.currentNotification asignado:', this.currentNotification);
-            console.log('🔍 === FIN deleteNotification ===');
             
             $('#condo360-confirm-message').text('¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.');
             $('#condo360-confirm-modal').show();
-            
-            // Debugging: verificar que el botón existe
-            console.log('🔍 Verificando botón condo360-confirm-action...');
-            console.log('🔍 Botón existe:', $('#condo360-confirm-action').length);
-            console.log('🔍 Botón en modal:', $('#condo360-confirm-modal #condo360-confirm-action').length);
-            console.log('🔍 Botón visible:', $('#condo360-confirm-action').is(':visible'));
-            
-            // Intentar hacer clic programáticamente para testing
-            setTimeout(() => {
-                console.log('🔍 Intentando clic programático...');
-                $('#condo360-confirm-action').trigger('click');
-            }, 1000);
         }
 
         // Manejar envío del formulario

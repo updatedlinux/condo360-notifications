@@ -205,6 +205,7 @@ class Condo360NotificationsManager {
             <div class="condo360-modal-content">
                 <div class="condo360-modal-header">
                     <h3>Confirmar Acción</h3>
+                    <span class="condo360-close">&times;</span>
                 </div>
                 <div class="condo360-modal-body">
                     <p id="condo360-confirm-message">¿Estás seguro de que deseas realizar esta acción?</p>
@@ -221,7 +222,7 @@ class Condo360NotificationsManager {
             <div class="condo360-modal-content condo360-details-modal-content">
                 <div class="condo360-modal-header">
                     <h3 id="condo360-details-title">Detalles de la Notificación</h3>
-                    <button type="button" class="condo360-close" data-action="close-details">&times;</button>
+                    <span class="condo360-close" data-action="close-details">&times;</span>
                 </div>
                 <div class="condo360-modal-body">
                     <div id="condo360-details-content"></div>
